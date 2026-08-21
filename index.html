@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIA 502 — Financial Statement Analysis | IMT Hyderabad</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #f7f8fc;
+    --surface: #ffffff;
+    --surface2: #f0f2f8;
+    --border: #e2e6f0;
+    --primary: #1a3a6b;
+    --primary-light: #2a5298;
+    --accent: #c8a84b;
+    --accent-light: #f5e9c8;
+    --text: #1c2237;
+    --text-muted: #6b7a99;
+    --danger: #c0392b;
+    --danger-light: #fdecea;
+    --success: #1e7e5e;
+    --success-light: #e6f5ef;
+    --warn: #b45309;
+    --warn-light: #fef3cd;
+    --urgent: #7b1d1d;
+    --urgent-light: #fde8e8;
+    --radius: 8px;
+    --shadow: 0 2px 8px rgba(26,58,107,0.08);
+    --shadow-md: 0 4px 16px rgba(26,58,107,0.12);
+    --font: 'Georgia', 'Times New Roman', serif;
+    --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(26,58,107,0.25);
+  }
+
+  .header-left { display: flex; flex-direction: column; }
+  .header-course { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.01em; }
+  .header-sub { font-size: 0.72rem; opacity: 0.75; margin-top: 1px; }
+
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+
+  .role-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    transition: background 0.2s;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+  .role-badge:hover { background: rgba(255,255,255,0.22); }
+  .role-badge.instructor { background: var(--accent); color: var(--primary); border-color: var(--accent); }
+
+  /* ---- NAV TABS ---- */
+  nav {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    gap: 0;
+    padding: 0 2rem;
+    box-shadow: var(--shadow);
+  }
+
+  .nav-tab {
+    padding: 14px 20px;
+    font-size: 0.87rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: -2px;
+    letter-spacing: 0.01em;
+  }
+  .nav-tab:hover { color: var(--primary); }
+  .nav-tab.active { color: var(--primary); border-bottom-color: var(--accent); }
+
+  /* ---- MAIN ---- */
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---- CARDS ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.25rem;
+  }
+
+  .card-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ---- HOME TAB ---- */
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .home-grid .card.full { grid-column: 1 / -1; }
+
+  .course-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .info-item { padding: 0.75rem; background: var(--surface2); border-radius: 6px; }
+  .info-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 3px; }
+  .info-value { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+
+  .module-strip {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary);
+    background: var(--surface2);
+    margin-bottom: 8px;
+  }
+  .module-strip-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .module-strip-title { font-size: 0.88rem; font-weight: 600; flex: 1; }
+  .module-strip-sessions { font-size: 0.75rem; color: var(--text-muted); }
+
+  .assessment-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .assessment-row:last-child { border-bottom: none; }
+  .assessment-name { font-size: 0.88rem; }
+  .assessment-pct {
+    font-size: 1.1rem; font-weight: 700; color: var(--primary);
+    background: var(--accent-light);
+    padding: 2px 10px; border-radius: 12px;
+  }
+
+  /* ---- MODULES TAB ---- */
+  .modules-layout { display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; }
+
+  .modules-sidebar .card { padding: 0.75rem; }
+  .module-btn {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: background 0.15s;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 2px;
+  }
+  .module-btn:hover { background: var(--surface2); }
+  .module-btn.active { background: var(--primary); color: #fff; font-weight: 600; }
+  .module-btn .mod-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
+  }
+  .module-btn.active .mod-num { background: rgba(255,255,255,0.25); }
+
+  .session-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .session-header {
+    padding: 12px 16px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+  }
+  .session-header:hover { background: #e8ebf5; }
+  .session-num {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 2px;
+  }
+  .session-title { font-size: 0.92rem; font-weight: 600; }
+  .session-body {
+    padding: 14px 16px;
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+  .session-body.open { display: block; }
+
+  .concept-tag {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--warn);
+    font-size: 0.73rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 12px;
+    margin: 3px 3px 3px 0;
+  }
+
+  .topics-list { list-style: none; padding: 0; }
+  .topics-list li {
+    padding: 4px 0;
+    font-size: 0.85rem;
+    color: var(--text);
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .topics-list li::before { content: '›'; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+
+  /* ---- RESOURCES TAB ---- */
+  .resource-filters { display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 14px; border-radius: 16px; border: 1.5px solid var(--border);
+    background: var(--surface); font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .folder-section { margin-bottom: 1.25rem; }
+  .folder-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; background: var(--surface2);
+    border-radius: var(--radius); margin-bottom: 8px;
+    border-left: 3px solid var(--primary); cursor: pointer;
+  }
+  .folder-header:hover { background: var(--border); }
+  .folder-name { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .folder-count { font-size: 0.75rem; color: var(--text-muted); }
+  .folder-toggle { font-size: 0.8rem; color: var(--text-muted); transition: transform .2s; }
+  .folder-toggle.collapsed { transform: rotate(-90deg); }
+  .folder-items { padding-left: 4px; }
+  .folder-items.collapsed { display: none; }
+  .resource-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--shadow);
+  }
+  .resource-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .resource-icon.pdf { background: #fde8e8; color: #c0392b; }
+  .resource-icon.slide { background: #e8f0fe; color: #1a73e8; }
+  .resource-icon.spreadsheet { background: #e6f4ea; color: #1e7e5e; }
+  .resource-icon.video { background: #fce8ff; color: #7b1fa2; }
+  .resource-icon.article { background: #fff3cd; color: #856404; }
+  .resource-icon.case { background: #e8f5e9; color: #2e7d32; }
+  .resource-icon.simulation { background: #ede7f6; color: #5e35b1; }
+
+  .resource-meta { flex: 1; }
+  .resource-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 3px; }
+  .resource-desc { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 5px; }
+  .resource-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .tag-module { background: var(--surface2); color: var(--primary); }
+  .tag-type { background: var(--accent-light); color: var(--warn); }
+  .tag-session { background: #e8f0fe; color: #1a73e8; }
+
+  .resource-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* ---- ANNOUNCEMENTS TAB ---- */
+  .ann-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary);
+  }
+  .ann-item.important { border-left-color: var(--accent); }
+  .ann-item.urgent { border-left-color: var(--danger); background: var(--urgent-light); }
+  .ann-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .ann-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 5px; }
+  .ann-body { font-size: 0.87rem; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+  .ann-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .priority-badge {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 2px 8px; border-radius: 10px;
+  }
+  .priority-badge.normal { background: var(--surface2); color: var(--text-muted); }
+  .priority-badge.important { background: var(--warn-light); color: var(--warn); }
+  .priority-badge.urgent { background: var(--urgent-light); color: var(--urgent); }
+  .ann-date { font-size: 0.73rem; color: var(--text-muted); }
+
+  /* ---- GLOSSARY TAB ---- */
+  .glossary-controls { display: flex; gap: 10px; margin-bottom: 1.25rem; align-items: center; flex-wrap: wrap; }
+  .glossary-search {
+    flex: 1; min-width: 200px;
+    padding: 8px 14px 8px 36px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    font-size: 0.88rem; background: var(--surface);
+    position: relative;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1rem; pointer-events: none; }
+
+  .alpha-filter { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1rem; }
+  .alpha-btn {
+    width: 30px; height: 30px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--surface); font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    color: var(--text-muted); transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+  }
+  .alpha-btn:hover, .alpha-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .gloss-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .gloss-letter {
+    width: 36px; height: 36px; border-radius: 6px;
+    background: var(--primary); color: #fff;
+    font-size: 1rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .gloss-content { flex: 1; }
+  .gloss-term { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .gloss-def { font-size: 0.84rem; color: var(--text); line-height: 1.55; margin-bottom: 6px; }
+  .gloss-footer { display: flex; gap: 6px; align-items: center; }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 6px; border: none;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: var(--primary); }
+  .btn-accent:hover { background: #b8923a; }
+  .btn-outline { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-danger { background: var(--danger-light); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+  .btn-success { background: var(--success-light); color: var(--success); }
+  .btn-success:hover { background: var(--success); color: #fff; }
+  .btn-warning { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .btn-warning:hover { background: #fcd34d; color: #78350f; }
+
+  /* ---- FORM / MODAL ---- */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 2rem; width: min(520px, 94vw);
+    box-shadow: var(--shadow-md);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+
+  .form-group { margin-bottom: 1rem; }
+  .form-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 5px; display: block; }
+  .form-control {
+    width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 6px;
+    font-size: 0.88rem; font-family: var(--font-ui); color: var(--text);
+    background: var(--surface); transition: border-color 0.15s;
+  }
+  .form-control:focus { outline: none; border-color: var(--primary); }
+  textarea.form-control { resize: vertical; min-height: 80px; }
+  select.form-control { cursor: pointer; }
+
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+
+  /* ---- SECTION TITLES ---- */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .section-title {
+    font-size: 1.15rem; font-weight: 700; color: var(--primary);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title i { color: var(--accent); }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text-muted);
+  }
+  .empty-state i { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 0.75rem; }
+  .empty-state p { font-size: 0.88rem; }
+
+  /* ---- UTILITIES ---- */
+  .text-muted { color: var(--text-muted); }
+  .flex { display: flex; }
+  .gap-2 { gap: 0.5rem; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* ---- INSTRUCTOR SECTION ---- */
+  .instructor-section {
+    background: var(--accent-light);
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .instructor-label {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--warn); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ---- TOAST ---- */
+  #toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--primary); color: #fff;
+    padding: 10px 18px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+    box-shadow: var(--shadow-md); z-index: 9999;
+    transform: translateY(60px); opacity: 0; transition: all 0.3s;
+    pointer-events: none;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 768px) {
+    main { padding: 1rem; }
+    .home-grid { grid-template-columns: 1fr; }
+    .home-grid .card.full { grid-column: 1; }
+    .modules-layout { grid-template-columns: 1fr; }
+    .course-info-grid { grid-template-columns: 1fr; }
+    nav { overflow-x: auto; padding: 0 1rem; }
+    .nav-tab { padding: 12px 14px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <span class="header-course">FIA 502 — Financial Statement Analysis</span>
+    <span class="header-sub">PGDM / PGDM (Finance) / PGDM (Marketing), Term V &nbsp;|&nbsp; AY 2026-27 &nbsp;|&nbsp; Prof. Nikhil Rastogi</span>
+  </div>
+  <div class="header-right">
+    <button class="role-badge" id="roleBtn" onclick="toggleRole()">
+      <i class="ti ti-user"></i>
+      <span id="roleBtnLabel">Student</span>
+    </button>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-tab active" onclick="switchTab('home')" id="tab-home">
+    <i class="ti ti-home"></i> Home
+  </div>
+  <div class="nav-tab" onclick="switchTab('modules')" id="tab-modules">
+    <i class="ti ti-book"></i> Modules
+  </div>
+  <div class="nav-tab" onclick="switchTab('resources')" id="tab-resources">
+    <i class="ti ti-folder"></i> Resources
+  </div>
+  <div class="nav-tab" onclick="switchTab('announcements')" id="tab-announcements">
+    <i class="ti ti-speakerphone"></i> Announcements
+  </div>
+  <div class="nav-tab" onclick="switchTab('glossary')" id="tab-glossary">
+    <i class="ti ti-vocabulary"></i> Glossary
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+  <!-- ============ HOME ============ -->
+  <div class="tab-panel active" id="panel-home">
+    <div class="home-grid">
+
+      <!-- Course Info -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-info-circle"></i> Course Information</div>
+        <div class="course-info-grid">
+          <div class="info-item"><div class="info-label">Course Code</div><div class="info-value">FIA 502</div></div>
+          <div class="info-item"><div class="info-label">Program</div><div class="info-value">PGDM, PGDM(F) & PGDM(M) — Term V</div></div>
+          <div class="info-item"><div class="info-label">Academic Year</div><div class="info-value">2026-27</div></div>
+          <div class="info-item"><div class="info-label">Instructor</div><div class="info-value">Prof. Nikhil Rastogi</div></div>
+          <div class="info-item"><div class="info-label">Total Sessions</div><div class="info-value">20 Sessions</div></div>
+          <div class="info-item"><div class="info-label">Institution</div><div class="info-value">IMT Hyderabad</div></div>
+        </div>
+      </div>
+
+      <!-- Assessment -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-report-analytics"></i> Assessment Scheme</div>
+        <div class="assessment-row">
+          <span class="assessment-name"><i class="ti ti-users" style="color:var(--text-muted)"></i> Class Participation — 1</span>
+          <span class="assessment-pct">10%</span>
+        </div>
+        <div class="assessment-row">
+          <span class="assessment-name"><i class="ti ti-users" style="color:var(--text-muted)"></i> Class Participation — 2</span>
+          <span class="assessment-pct">10%</span>
+        </div>
+        <div class="assessment-row">
+          <span class="assessment-name"><i class="ti ti-briefcase" style="color:var(--text-muted)"></i> Group Project</span>
+          <span class="assessment-pct">20%</span>
+        </div>
+        <div class="assessment-row">
+          <span class="assessment-name"><i class="ti ti-pencil" style="color:var(--text-muted)"></i> Mid-Term <span style="font-size:0.75rem;color:var(--text-muted)">(after Session 10)</span></span>
+          <span class="assessment-pct">20%</span>
+        </div>
+        <div class="assessment-row">
+          <span class="assessment-name"><i class="ti ti-certificate" style="color:var(--text-muted)"></i> End-Term Examination</span>
+          <span class="assessment-pct">40%</span>
+        </div>
+      </div>
+
+      <!-- Textbooks -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-books"></i> Prescribed Textbooks</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:6px;margin-bottom:8px;border-left:3px solid var(--primary);">
+          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--primary);margin-bottom:3px;">Primary Textbook</div>
+          <div style="font-size:0.88rem;font-weight:600;">The Analysis and Use of Financial Statements (GW)</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">Gerald I. White, Ashwinpaul C. Sondhi &amp; Dov Fried · Wiley India Edition</div>
+        </div>
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--warn);margin-bottom:6px;margin-top:10px;">Reference Books</div>
+        <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;border-left:3px solid var(--accent);">
+          <div style="font-size:0.85rem;font-weight:600;">Global Financial Reporting and Analysis</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">David Alexander, Britton &amp; Jorissen · Cengage Learning</div>
+        </div>
+        <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;border-left:3px solid var(--accent);">
+          <div style="font-size:0.85rem;font-weight:600;">Analysis of Financial Statements</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">Charles H. Gibson · South-Western, Cengage Learning</div>
+        </div>
+        <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;border-left:3px solid var(--accent);">
+          <div style="font-size:0.85rem;font-weight:600;">Financial Statement Analysis</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">John J. Wild, K.R. Subramanyam &amp; Robert F. Halsey · Tata McGraw Hill</div>
+        </div>
+        <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--accent);">
+          <div style="font-size:0.85rem;font-weight:600;">Indian Accounting Standards, IFRS and US GAAP</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">Reference material, as indicated in class</div>
+        </div>
+      </div>
+
+      <!-- Recent Announcements preview -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-speakerphone"></i> Recent Announcements</div>
+        <div id="homeAnnouncementsPreview">
+          <div class="empty-state" style="padding:1.5rem 1rem;">
+            <i class="ti ti-speakerphone"></i>
+            <p>No announcements yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course Structure -->
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-layout-list"></i> Course Structure</div>
+        <div id="homeModules">
+          <div class="module-strip"><div class="module-strip-num">1</div><div class="module-strip-title">Financial Reporting Framework and Environment</div><div class="module-strip-sessions">2 Sessions</div></div>
+          <div class="module-strip"><div class="module-strip-num">2</div><div class="module-strip-title">Foundations of Ratio and Financial Statement Analysis</div><div class="module-strip-sessions">2 Sessions</div></div>
+          <div class="module-strip"><div class="module-strip-num">3</div><div class="module-strip-title">Revenue and Expense Recognition</div><div class="module-strip-sessions">3 Sessions</div></div>
+          <div class="module-strip"><div class="module-strip-num">4</div><div class="module-strip-title">Analysis of Fixed Assets</div><div class="module-strip-sessions">3 Sessions</div></div>
+          <div class="module-strip" style="border-left-color:var(--danger);background:var(--danger-light)"><div class="module-strip-num" style="background:var(--danger)"><i class="ti ti-certificate" style="font-size:0.8rem"></i></div><div class="module-strip-title">Mid-Term Examination</div><div class="module-strip-sessions">After Session 10</div></div>
+          <div class="module-strip"><div class="module-strip-num">5</div><div class="module-strip-title">Analysis of Income Taxes</div><div class="module-strip-sessions">2 Sessions</div></div>
+          <div class="module-strip"><div class="module-strip-num">6</div><div class="module-strip-title">Leases and Off-Balance Sheet Liabilities</div><div class="module-strip-sessions">3 Sessions</div></div>
+          <div class="module-strip"><div class="module-strip-num">7</div><div class="module-strip-title">Financial Instruments</div><div class="module-strip-sessions">3 Sessions</div></div>
+          <div class="module-strip"><div class="module-strip-num">8</div><div class="module-strip-title">Project Presentations</div><div class="module-strip-sessions">2 Sessions</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ MODULES ============ -->
+  <div class="tab-panel" id="panel-modules">
+    <div class="modules-layout">
+      <div class="modules-sidebar">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-list"></i> Modules</div>
+          <button class="module-btn active" onclick="selectModule(0)" id="mbtn-0"><span class="mod-num">1</span>Financial Reporting</button>
+          <button class="module-btn" onclick="selectModule(1)" id="mbtn-1"><span class="mod-num">2</span>Ratio Analysis</button>
+          <button class="module-btn" onclick="selectModule(2)" id="mbtn-2"><span class="mod-num">3</span>Revenue &amp; Expense</button>
+          <button class="module-btn" onclick="selectModule(3)" id="mbtn-3"><span class="mod-num">4</span>Fixed Assets</button>
+          <button class="module-btn" onclick="selectModule(4)" id="mbtn-4"><span class="mod-num">5</span>Income Taxes</button>
+          <button class="module-btn" onclick="selectModule(5)" id="mbtn-5"><span class="mod-num">6</span>Leases</button>
+          <button class="module-btn" onclick="selectModule(6)" id="mbtn-6"><span class="mod-num">7</span>Financial Instruments</button>
+          <button class="module-btn" onclick="selectModule(7)" id="mbtn-7"><span class="mod-num">8</span>Project Presentations</button>
+        </div>
+      </div>
+      <div>
+        <div id="module-content-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESOURCES ============ -->
+  <div class="tab-panel" id="panel-resources">
+    <div class="section-header">
+      <div class="section-title"><i class="ti ti-folder-open"></i> Learning Resources</div>
+    </div>
+    <div id="instructor-add-resource" style="display:none;">
+      <div class="instructor-section">
+        <div class="instructor-label"><i class="ti ti-lock-open"></i> Instructor Controls</div>
+        <button class="btn btn-primary" onclick="editingResourceId=null;document.querySelector('#modalResource .modal-title').innerHTML='<i class=\'ti ti-folder-plus\'></i> Add Resource';document.querySelector('#modalResource .btn-primary').innerHTML='<i class=\'ti ti-check\'></i> Add Resource';['res-title','res-desc','res-session','res-url'].forEach(id=>document.getElementById(id).value='');populateFolderSelect();openModal('modalResource')">
+          <i class="ti ti-plus"></i> Add Resource
+        </button>
+        <button class="btn btn-outline" onclick="promptNewFolder()" style="margin-left:6px">
+          <i class="ti ti-folder-plus"></i> New Folder
+        </button>
+      </div>
+    </div>
+    <div class="resource-filters" id="resourceFilters">
+      <button class="filter-btn active" onclick="filterResources('all', this)">All Modules</button>
+      <button class="filter-btn" onclick="filterResources('1', this)">Module 1</button>
+      <button class="filter-btn" onclick="filterResources('2', this)">Module 2</button>
+      <button class="filter-btn" onclick="filterResources('3', this)">Module 3</button>
+      <button class="filter-btn" onclick="filterResources('4', this)">Module 4</button>
+      <button class="filter-btn" onclick="filterResources('5', this)">Module 5</button>
+      <button class="filter-btn" onclick="filterResources('6', this)">Module 6</button>
+      <button class="filter-btn" onclick="filterResources('7', this)">Module 7</button>
+      <button class="filter-btn" onclick="filterResources('8', this)">Module 8</button>
+    </div>
+    <div id="resourcesList"></div>
+  </div>
+
+  <!-- ============ ANNOUNCEMENTS ============ -->
+  <div class="tab-panel" id="panel-announcements">
+    <div class="section-header">
+      <div class="section-title"><i class="ti ti-speakerphone"></i> Announcements</div>
+    </div>
+    <div id="instructor-add-ann" style="display:none;">
+      <div class="instructor-section">
+        <div class="instructor-label"><i class="ti ti-lock-open"></i> Instructor Controls</div>
+        <button class="btn btn-primary" onclick="openModal('modalAnn')">
+          <i class="ti ti-plus"></i> Post Announcement
+        </button>
+      </div>
+    </div>
+    <div id="announcementsList"></div>
+  </div>
+
+  <!-- ============ GLOSSARY ============ -->
+  <div class="tab-panel" id="panel-glossary">
+    <div class="section-header">
+      <div class="section-title"><i class="ti ti-vocabulary"></i> Finance Glossary</div>
+    </div>
+    <div id="instructor-add-gloss" style="display:none;">
+      <div class="instructor-section">
+        <div class="instructor-label"><i class="ti ti-lock-open"></i> Instructor Controls</div>
+        <button class="btn btn-primary" onclick="openModal('modalGloss')">
+          <i class="ti ti-plus"></i> Add Term
+        </button>
+      </div>
+    </div>
+    <div class="glossary-controls">
+      <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input type="text" class="form-control glossary-search" id="glossSearch" placeholder="Search terms..." oninput="renderGlossary()">
+      </div>
+      <button class="filter-btn" onclick="filterGlossModule('all', this)" id="gmod-all" style="white-space:nowrap">All Modules</button>
+      <button class="filter-btn" onclick="filterGlossModule('1', this)" id="gmod-1">M1</button>
+      <button class="filter-btn" onclick="filterGlossModule('2', this)" id="gmod-2">M2</button>
+      <button class="filter-btn" onclick="filterGlossModule('3', this)" id="gmod-3">M3</button>
+      <button class="filter-btn" onclick="filterGlossModule('4', this)" id="gmod-4">M4</button>
+      <button class="filter-btn" onclick="filterGlossModule('5', this)" id="gmod-5">M5</button>
+      <button class="filter-btn" onclick="filterGlossModule('6', this)" id="gmod-6">M6</button>
+      <button class="filter-btn" onclick="filterGlossModule('7', this)" id="gmod-7">M7</button>
+      <button class="filter-btn" onclick="filterGlossModule('8', this)" id="gmod-8">M8</button>
+    </div>
+    <div class="alpha-filter" id="alphaFilter"></div>
+    <div id="glossaryList"></div>
+  </div>
+
+</main>
+
+<!-- ============ MODALS ============ -->
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="modalPassword">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title"><i class="ti ti-lock"></i> Instructor Login</div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" id="pwdInput" placeholder="Enter instructor password" onkeydown="if(event.key==='Enter')checkPassword()">
+    </div>
+    <div id="pwdError" style="color:var(--danger);font-size:0.8rem;margin-bottom:0.75rem;display:none;">Incorrect password. Try again.</div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalPassword')">Cancel</button>
+      <button class="btn btn-primary" onclick="checkPassword()"><i class="ti ti-login"></i> Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Resource Modal -->
+<div class="modal-overlay" id="modalResource">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-folder-plus"></i> Add Resource</div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input type="text" class="form-control" id="res-title" placeholder="Resource title">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" id="res-desc" placeholder="Brief description of this resource"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group">
+        <label class="form-label">Module</label>
+        <select class="form-control" id="res-module" onchange="populateFolderSelect(this.value)">
+          <option value="1">Module 1 — Financial Reporting</option>
+          <option value="2">Module 2 — Ratio Analysis</option>
+          <option value="3">Module 3 — Revenue &amp; Expense</option>
+          <option value="4">Module 4 — Fixed Assets</option>
+          <option value="5">Module 5 — Income Taxes</option>
+          <option value="6">Module 6 — Leases</option>
+          <option value="7">Module 7 — Financial Instruments</option>
+          <option value="8">Module 8 — Project Presentations</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Session Number</label>
+        <input type="number" class="form-control" id="res-session" placeholder="e.g. 3" min="1" max="20">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-control" id="res-type">
+        <option value="pdf">PDF</option>
+        <option value="slide">Slide Deck</option>
+        <option value="spreadsheet">Spreadsheet</option>
+        <option value="video">Video</option>
+        <option value="article">Article</option>
+        <option value="case">Case Study</option>
+        <option value="simulation">Simulation</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Folder <span style="font-size:0.75rem;color:var(--text-muted)">(optional — assign to a folder within the module)</span></label>
+      <div style="display:flex;gap:8px">
+        <select class="form-control" id="res-folder" style="flex:1"></select>
+        <button class="btn btn-outline" onclick="promptNewFolder()" title="Create new folder" style="flex-shrink:0;padding:8px 12px"><i class="ti ti-folder-plus"></i> New</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Shareable URL</label>
+      <input type="url" class="form-control" id="res-url" placeholder="https://...">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalResource')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveResource()"><i class="ti ti-check"></i> Add Resource</button>
+    </div>
+  </div>
+</div>
+
+<!-- Announcement Modal -->
+<div class="modal-overlay" id="modalAnn">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-speakerphone"></i> Post Announcement</div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input type="text" class="form-control" id="ann-title" placeholder="Announcement title">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-control" id="ann-body" placeholder="Write your announcement here..." style="min-height:100px"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-control" id="ann-priority">
+          <option value="normal">Normal</option>
+          <option value="important">Important</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Module Tag (optional)</label>
+        <select class="form-control" id="ann-module">
+          <option value="">— None —</option>
+          <option value="1">Module 1</option>
+          <option value="2">Module 2</option>
+          <option value="3">Module 3</option>
+          <option value="4">Module 4</option>
+          <option value="5">Module 5</option>
+          <option value="6">Module 6</option>
+          <option value="7">Module 7</option>
+          <option value="8">Module 8</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalAnn')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAnnouncement()"><i class="ti ti-check"></i> Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- Glossary Modal -->
+<div class="modal-overlay" id="modalGloss">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-vocabulary"></i> Add Glossary Term</div>
+    <div class="form-group">
+      <label class="form-label">Term</label>
+      <input type="text" class="form-control" id="gloss-term" placeholder="Finance term">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Definition</label>
+      <textarea class="form-control" id="gloss-def" placeholder="Clear, concise definition..." style="min-height:90px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Module Tag</label>
+      <select class="form-control" id="gloss-module">
+        <option value="1">Module 1 — Financial Reporting</option>
+        <option value="2">Module 2 — Ratio Analysis</option>
+        <option value="3">Module 3 — Revenue &amp; Expense</option>
+        <option value="4">Module 4 — Fixed Assets</option>
+        <option value="5">Module 5 — Income Taxes</option>
+        <option value="6">Module 6 — Leases</option>
+        <option value="7">Module 7 — Financial Instruments</option>
+        <option value="8">Module 8 — Project Presentations</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalGloss')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGlossaryTerm()"><i class="ti ti-check"></i> Add Term</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// =====================
+// DATA
+// =====================
+
+const MODULES_DATA = [
+  {
+    "id": 1,
+    "title": "Financial Reporting Framework and Environment",
+    "learningOutcome": "Understand the objectives and conceptual framework of financial reporting, and describe the environment — regulators, standards and reporting formats — within which financial statements are prepared and analysed.",
+    "color": "#185FA5",
+    "sessions": [
+      {
+        "num": 1,
+        "title": "Objectives of Financial Reporting",
+        "ref": "Chapter 1 (GW)",
+        "topics": [
+          "Purpose and objectives of financial reporting",
+          "Users of financial statements: investors, creditors, regulators, management",
+          "Qualitative characteristics: relevance, faithful representation, comparability, understandability",
+          "The conceptual framework underlying financial reporting (IASB / Ind AS)",
+          "Financial statements as the foundation for business decision-making"
+        ],
+        "concepts": [
+          "Financial Reporting",
+          "Conceptual Framework",
+          "Qualitative Characteristics",
+          "Relevance",
+          "Faithful Representation",
+          "Comparability"
+        ]
+      },
+      {
+        "num": 2,
+        "title": "The Financial Reporting Environment",
+        "ref": "Chapter 1 (GW)",
+        "topics": [
+          "Overview of Ind AS, IFRS and US GAAP, and the convergence journey",
+          "Role of regulators and standard-setters: MCA, ICAI, SEBI, IASB, FASB",
+          "The auditor's role and types of audit opinion",
+          "The four core financial statements and how they interlink",
+          "Reading footnotes and Management Discussion & Analysis (MD&A) as sources of insight"
+        ],
+        "concepts": [
+          "Ind AS",
+          "IFRS",
+          "US GAAP",
+          "Auditor's Report",
+          "MD&A",
+          "Notes to Accounts"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Foundations of Ratio and Financial Statement Analysis",
+    "learningOutcome": "Understand the tools and limitations of ratio analysis, and compute and interpret liquidity, efficiency, leverage and profitability ratios to assess a company's financial position and performance.",
+    "color": "#0F6E56",
+    "sessions": [
+      {
+        "num": 3,
+        "title": "Ratio Analysis — Framework and Limitations",
+        "ref": "Chapter 4 (GW)",
+        "topics": [
+          "Purpose and limitations of ratio analysis",
+          "Cross-sectional vs time-series comparison",
+          "Comparability issues across firms with differing accounting policies",
+          "Trend analysis and common-size financial statements",
+          "Broad categories of ratios: liquidity, efficiency, leverage, profitability"
+        ],
+        "concepts": [
+          "Ratio Analysis",
+          "Common-Size Statement",
+          "Trend Analysis",
+          "Liquidity Ratio",
+          "Leverage Ratio",
+          "Profitability Ratio"
+        ]
+      },
+      {
+        "num": 4,
+        "title": "Class Exercise — Integrated Ratio Analysis",
+        "ref": "Chapter 4 (GW)",
+        "topics": [
+          "Computing liquidity ratios: current ratio, quick ratio, cash ratio",
+          "Computing efficiency ratios: inventory turnover, receivables turnover, total asset turnover",
+          "Computing leverage ratios: debt-equity ratio, interest coverage ratio",
+          "Computing profitability ratios: gross margin, net margin, ROA, ROE",
+          "DuPont decomposition of Return on Equity",
+          "Case-based numerical exercise integrating all ratio categories"
+        ],
+        "concepts": [
+          "Current Ratio",
+          "Inventory Turnover",
+          "Debt-Equity Ratio",
+          "Interest Coverage",
+          "DuPont Analysis",
+          "Return on Equity (ROE)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Revenue and Expense Recognition",
+    "learningOutcome": "Evaluate revenue and expense recognition practices for goods and services, identify earnings management techniques, and assess their impact on reported earnings quality.",
+    "color": "#854F0B",
+    "sessions": [
+      {
+        "num": 5,
+        "title": "Revenue Recognition for Goods and Services",
+        "ref": "Chapter 2 (GW)",
+        "topics": [
+          "The five-step revenue recognition model (Ind AS 115 / IFRS 15)",
+          "Recognition at a point in time vs recognition over time",
+          "Percentage-of-completion vs completed-contract methods",
+          "Contract assets, contract liabilities and performance obligations",
+          "Industry-specific issues: software, construction and real estate revenue"
+        ],
+        "concepts": [
+          "Revenue Recognition",
+          "Five-Step Model",
+          "Performance Obligation",
+          "Percentage-of-Completion",
+          "Contract Asset/Liability"
+        ]
+      },
+      {
+        "num": 6,
+        "title": "Earnings Management Issues",
+        "ref": "Chapter 2 (GW)",
+        "topics": [
+          "The matching principle and expense recognition timing",
+          "Channel stuffing and bill-and-hold arrangements",
+          "Cookie-jar reserves and big-bath accounting",
+          "Capitalization vs expensing choices used to manage reported earnings",
+          "Red flags of earnings management and assessing earnings quality"
+        ],
+        "concepts": [
+          "Earnings Management",
+          "Big Bath Accounting",
+          "Cookie Jar Reserves",
+          "Channel Stuffing",
+          "Quality of Earnings"
+        ]
+      },
+      {
+        "num": 7,
+        "title": "Case Discussion — Biovail",
+        "ref": "Case: Biovail | Chapter 2 (GW)",
+        "topics": [
+          "Applying revenue recognition concepts to a real-world restatement case",
+          "Identifying aggressive or improper recognition practices",
+          "Assessing the impact of recognition choices on reported earnings and ratios",
+          "Regulatory and audit response to the case",
+          "Lessons for analysts on detecting earnings-quality red flags"
+        ],
+        "concepts": [
+          "Case Analysis",
+          "Earnings Quality",
+          "Financial Statement Restatement",
+          "Analyst Red Flags"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Analysis of Fixed Assets",
+    "learningOutcome": "Interpret the accounting for tangible and intangible assets, understand the effect of capitalization vs expensing choices on financial ratios, and assess the impact of revaluation and impairment on reported financial statements.",
+    "color": "#534AB7",
+    "sessions": [
+      {
+        "num": 8,
+        "title": "Recognition of Tangible and Intangible Assets",
+        "ref": "Chapters 7, 8 (GW)",
+        "topics": [
+          "Recognition criteria for tangible and intangible assets",
+          "Treatment of research and development (R&D) costs",
+          "Goodwill and other identifiable intangible assets",
+          "Depreciation methods: straight-line, written-down value, units of production",
+          "Estimating useful life and residual value"
+        ],
+        "concepts": [
+          "Asset Recognition",
+          "R&D Capitalization",
+          "Goodwill",
+          "Intangible Asset",
+          "Depreciation Methods"
+        ]
+      },
+      {
+        "num": 9,
+        "title": "Capitalization vs Expensing — Impact on Ratios",
+        "ref": "Chapters 7, 8 (GW)",
+        "topics": [
+          "Effect of capitalizing vs expensing on profitability ratios (net margin, ROA)",
+          "Effect on leverage ratios (debt-equity, asset turnover)",
+          "Effect on efficiency ratios and comparability across firms",
+          "Adjusting financial statements to compare firms with differing capitalization policies",
+          "Analyst adjustments used to restore comparability"
+        ],
+        "concepts": [
+          "Capitalization",
+          "Expensing",
+          "Ratio Comparability",
+          "Analyst Adjustments"
+        ]
+      },
+      {
+        "num": 10,
+        "title": "Revaluation and Impairment of Assets",
+        "ref": "Chapters 7, 8 (GW)",
+        "topics": [
+          "Revaluation model vs cost model for fixed assets",
+          "Impairment testing and estimating recoverable amount",
+          "Indicators that trigger an impairment review",
+          "Impact of impairment and revaluation on the balance sheet and P&L",
+          "Class exercise: interpreting revaluation and impairment disclosures"
+        ],
+        "concepts": [
+          "Asset Revaluation",
+          "Impairment",
+          "Recoverable Amount",
+          "Fair Value",
+          "Cost Model"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Analysis of Income Taxes",
+    "learningOutcome": "Compute deferred tax assets and liabilities, distinguish between temporary and permanent differences, and assess the implications of tax-rate changes and other analyst issues in income tax reporting.",
+    "color": "#B7405A",
+    "sessions": [
+      {
+        "num": 11,
+        "title": "Deferred Tax Assets and Liabilities",
+        "ref": "Chapter 9 (GW)",
+        "topics": [
+          "Temporary vs permanent differences between accounting and taxable income",
+          "Computing deferred tax assets and deferred tax liabilities",
+          "Recognition criteria for deferred tax assets and the valuation allowance",
+          "Presentation of current and deferred tax expense in the P&L",
+          "Numerical problems on deferred tax computation"
+        ],
+        "concepts": [
+          "Deferred Tax Asset",
+          "Deferred Tax Liability",
+          "Temporary Difference",
+          "Permanent Difference",
+          "Valuation Allowance"
+        ]
+      },
+      {
+        "num": 12,
+        "title": "Tax Rate Changes and Issues for the Analyst",
+        "ref": "Chapter 9 (GW)",
+        "topics": [
+          "Impact of a change in statutory tax rate on deferred tax balances",
+          "Effective tax rate vs statutory tax rate — reconciliation",
+          "Tax loss carryforwards and carrybacks",
+          "Analyst adjustments for non-recurring or one-off tax items",
+          "Cross-country comparability issues in tax reporting"
+        ],
+        "concepts": [
+          "Effective Tax Rate",
+          "Tax Rate Change",
+          "Tax Loss Carryforward",
+          "Tax Reconciliation"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Leases and Off-Balance Sheet Liabilities",
+    "learningOutcome": "Understand the accounting and reporting of operating vs finance leases, and assess the effect of the leasing method on financial ratios and off-balance-sheet financing.",
+    "color": "#1A7A8A",
+    "sessions": [
+      {
+        "num": 13,
+        "title": "Operating Lease vs Finance Lease",
+        "ref": "Chapter 11 (GW)",
+        "topics": [
+          "Classification criteria: operating lease vs finance lease under earlier standards",
+          "The single lease-accounting model under Ind AS 116 / IFRS 16",
+          "Right-of-use asset and lease liability recognition by the lessee",
+          "Lessor accounting: operating vs finance lease",
+          "Exemptions for short-term and low-value asset leases"
+        ],
+        "concepts": [
+          "Operating Lease",
+          "Finance Lease",
+          "Right-of-Use Asset",
+          "Lease Liability",
+          "Ind AS 116"
+        ]
+      },
+      {
+        "num": 14,
+        "title": "Impact of Lease Method on Financial Statements and Ratios",
+        "ref": "Chapter 11 (GW)",
+        "topics": [
+          "Effect of lease capitalization on the balance sheet — assets and liabilities both rise",
+          "Impact on leverage ratios: debt-equity, asset turnover",
+          "Impact on EBITDA and other profitability measures",
+          "Off-balance-sheet financing motivations under the earlier lease standard",
+          "Adjustments for comparing firms with different lease intensities"
+        ],
+        "concepts": [
+          "Lease Capitalization",
+          "Off-Balance-Sheet Financing",
+          "EBITDA Impact",
+          "Leverage Impact"
+        ]
+      },
+      {
+        "num": 15,
+        "title": "Case Discussion — Snowman Logistics",
+        "ref": "Case: Snowman Logistics | Chapter 11 (GW)",
+        "topics": [
+          "Applying lease accounting concepts to a cold-chain logistics business",
+          "Analysing a lease-intensive business model",
+          "Recomputing ratios before and after lease capitalization",
+          "Discussing investor implications of the lease accounting change"
+        ],
+        "concepts": [
+          "Case Analysis",
+          "Lease-Intensive Business",
+          "Ratio Recomputation"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Financial Instruments",
+    "learningOutcome": "Interpret the accounting treatment of financial assets and financial liabilities, understand fair value and mark-to-market accounting, and evaluate the financial impact of hedge accounting.",
+    "color": "#6B4C93",
+    "sessions": [
+      {
+        "num": 16,
+        "title": "Accounting for Financial Assets and Liabilities",
+        "ref": "Instructor material",
+        "topics": [
+          "Classification of financial assets: amortised cost, FVOCI, FVTPL (Ind AS 109 / IFRS 9)",
+          "Classification and measurement of financial liabilities",
+          "Initial and subsequent measurement of financial instruments",
+          "The expected credit loss (ECL) model for impairment",
+          "Derecognition of financial assets and liabilities"
+        ],
+        "concepts": [
+          "Financial Asset Classification",
+          "Amortised Cost",
+          "FVOCI",
+          "FVTPL",
+          "Expected Credit Loss (ECL)"
+        ]
+      },
+      {
+        "num": 17,
+        "title": "Fair Value Accounting",
+        "ref": "Instructor material",
+        "topics": [
+          "The fair value hierarchy: Level 1, Level 2 and Level 3 inputs",
+          "Mark-to-market accounting and its impact on earnings volatility",
+          "Valuation techniques for instruments without an active market",
+          "Disclosure requirements for fair value measurements",
+          "Arguments for and against fair value accounting"
+        ],
+        "concepts": [
+          "Fair Value Hierarchy",
+          "Mark-to-Market",
+          "Level 3 Inputs",
+          "Valuation Techniques"
+        ]
+      },
+      {
+        "num": 18,
+        "title": "Hedge Accounting",
+        "ref": "Instructor material",
+        "topics": [
+          "Purpose of hedge accounting — matching gains/losses on hedge and hedged item",
+          "Types of hedges: fair value hedge, cash flow hedge, net investment hedge",
+          "Hedge effectiveness testing and documentation requirements",
+          "Impact of hedge accounting on reported earnings volatility"
+        ],
+        "concepts": [
+          "Hedge Accounting",
+          "Fair Value Hedge",
+          "Cash Flow Hedge",
+          "Hedge Effectiveness"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Project Presentations",
+    "learningOutcome": "Apply the accounting adjustments studied through the course to a real company, recompute ratios, and interpret how the adjusted ratios differ from the originally reported ratios.",
+    "color": "#B5872A",
+    "sessions": [
+      {
+        "num": 19,
+        "title": "Group Project Presentations — I",
+        "ref": "Group Project",
+        "topics": [
+          "Student groups present financial statement analysis of their assigned companies",
+          "Application of accounting adjustments studied through the course",
+          "Recomputation of ratios after adjustments",
+          "Peer and instructor feedback on analysis and presentation"
+        ],
+        "concepts": [
+          "Financial Statement Analysis",
+          "Accounting Adjustments",
+          "Ratio Recomputation"
+        ]
+      },
+      {
+        "num": 20,
+        "title": "Group Project Presentations — II",
+        "ref": "Group Project",
+        "topics": [
+          "Continuation of group project presentations",
+          "Comparative discussion of adjusted vs unadjusted ratios across companies presented",
+          "Synthesis of key course learnings",
+          "Wrap-up discussion on best practices for financial statement analysis"
+        ],
+        "concepts": [
+          "Comparative Analysis",
+          "Course Synthesis",
+          "Financial Statement Analysis Best Practices"
+        ]
+      }
+    ]
+  }
+];
+
+
+
+const DEFAULT_GLOSSARY = [
+  { id: "g1", term: "Financial Reporting", definition: "The process of communicating financial information about a business to external stakeholders through financial statements, footnotes and MD&A. Aims to provide information useful for economic decision-making.", module: "1" },
+  { id: "g2", term: "Conceptual Framework", definition: "The set of interrelated objectives and fundamentals that underlie financial reporting standards — defines the objective of financial reporting, qualitative characteristics of useful information, and the elements of financial statements.", module: "1" },
+  { id: "g3", term: "Qualitative Characteristics", definition: "Attributes that make financial information useful: relevance and faithful representation are fundamental; comparability, verifiability, timeliness and understandability are enhancing characteristics.", module: "1" },
+  { id: "g4", term: "Relevance", definition: "Information is relevant if it is capable of making a difference in the decisions made by users — it has predictive value, confirmatory value, or both.", module: "1" },
+  { id: "g5", term: "Faithful Representation", definition: "Information faithfully represents what it purports to represent when it is complete, neutral and free from material error.", module: "1" },
+  { id: "g6", term: "Ind AS", definition: "Indian Accounting Standards — the set of accounting standards notified by the Ministry of Corporate Affairs, converged with IFRS, applicable to specified classes of Indian companies.", module: "1" },
+  { id: "g7", term: "IFRS", definition: "International Financial Reporting Standards — issued by the IASB and adopted or used as a convergence benchmark by most jurisdictions outside the United States.", module: "1" },
+  { id: "g8", term: "US GAAP", definition: "Generally Accepted Accounting Principles used in the United States, issued primarily by the FASB. Differs from IFRS/Ind AS on several recognition and measurement issues (e.g. LIFO inventory, R&D costs).", module: "1" },
+  { id: "g9", term: "Auditor's Report", definition: "The auditor's independent opinion on whether financial statements present a true and fair view. Can be unqualified (clean), qualified, adverse, or a disclaimer of opinion.", module: "1" },
+  { id: "g10", term: "MD&A", definition: "Management Discussion and Analysis — a narrative section of the annual report where management discusses results of operations, liquidity, capital resources and known trends or uncertainties.", module: "1" },
+  { id: "g11", term: "Notes to Accounts", definition: "Footnotes accompanying the financial statements that disclose accounting policies, assumptions, and additional detail not visible on the face of the statements — often essential for analysis.", module: "1" },
+  { id: "g12", term: "Going Concern", definition: "The assumption that an entity will continue operating for the foreseeable future, without the need or intention to liquidate. Underlies most measurement bases used in financial reporting.", module: "1" },
+  { id: "g13", term: "Accrual Accounting", definition: "Basis of accounting where transactions are recorded when they occur (revenue earned, expense incurred), rather than when cash is received or paid. Contrasts with cash-basis accounting.", module: "1" },
+  { id: "g14", term: "Ratio Analysis", definition: "Technique of expressing relationships between financial statement line items as ratios to assess liquidity, efficiency, leverage and profitability, and to compare performance across time or firms.", module: "2" },
+  { id: "g15", term: "Common-Size Statement", definition: "A financial statement where each line item is expressed as a percentage of a base figure — total assets for the balance sheet, total revenue for the income statement — enabling comparison across firms of different size.", module: "2" },
+  { id: "g16", term: "Trend Analysis", definition: "Analysis of a firm's financial data over multiple periods to identify patterns of growth, decline or cyclicality, typically expressed as an index relative to a base year.", module: "2" },
+  { id: "g17", term: "Liquidity Ratio", definition: "Ratios measuring a firm's ability to meet short-term obligations, e.g. current ratio (current assets / current liabilities) and quick ratio (excludes inventory from current assets).", module: "2" },
+  { id: "g18", term: "Current Ratio", definition: "Current assets divided by current liabilities. A widely used measure of short-term liquidity; a ratio above 1 generally indicates the firm can cover short-term obligations with short-term assets.", module: "2" },
+  { id: "g19", term: "Inventory Turnover", definition: "Cost of goods sold divided by average inventory. Measures how many times inventory is sold and replaced over a period; higher turnover generally indicates efficient inventory management.", module: "2" },
+  { id: "g20", term: "Debt-Equity Ratio", definition: "Total debt divided by total shareholders' equity. Key leverage ratio indicating the proportion of financing from creditors relative to owners.", module: "2" },
+  { id: "g21", term: "Interest Coverage Ratio", definition: "EBIT divided by interest expense. Measures a firm's ability to meet interest obligations from operating earnings; a low ratio signals higher default risk.", module: "2" },
+  { id: "g22", term: "DuPont Analysis", definition: "Decomposition of Return on Equity into net profit margin × asset turnover × financial leverage (equity multiplier), isolating the drivers of ROE.", module: "2" },
+  { id: "g23", term: "Return on Equity (ROE)", definition: "Net income divided by average shareholders' equity. Measures the return generated on shareholders' invested capital.", module: "2" },
+  { id: "g24", term: "Return on Assets (ROA)", definition: "Net income (often adjusted for after-tax interest) divided by average total assets. Measures how efficiently a firm's assets generate profit, independent of financing structure.", module: "2" },
+  { id: "g25", term: "Revenue Recognition", definition: "The accounting process of recording revenue in the period in which the performance obligation is satisfied, following the five-step model under Ind AS 115 / IFRS 15.", module: "3" },
+  { id: "g26", term: "Five-Step Revenue Model", definition: "Ind AS 115 / IFRS 15 framework: (1) identify the contract, (2) identify performance obligations, (3) determine transaction price, (4) allocate the price, (5) recognise revenue as obligations are satisfied.", module: "3" },
+  { id: "g27", term: "Performance Obligation", definition: "A promise in a contract to transfer a distinct good or service to the customer. Revenue is recognised when (or as) each performance obligation is satisfied.", module: "3" },
+  { id: "g28", term: "Percentage-of-Completion Method", definition: "Revenue recognition method for long-term contracts (e.g. construction) where revenue and profit are recognised in proportion to the work completed during the period, rather than only on contract completion.", module: "3" },
+  { id: "g29", term: "Matching Principle", definition: "The principle that expenses should be recognised in the same period as the revenues they help generate, ensuring reported profit reflects the true economics of a period's activity.", module: "3" },
+  { id: "g30", term: "Earnings Management", definition: "The deliberate use of accounting choices, estimates or timing to influence reported earnings toward a desired outcome, within or sometimes outside the boundaries of accounting standards.", module: "3" },
+  { id: "g31", term: "Big Bath Accounting", definition: "Earnings management technique where a firm takes large write-offs or charges in a single (often already-bad) period, to clear the decks for improved reported performance in future periods.", module: "3" },
+  { id: "g32", term: "Cookie Jar Reserves", definition: "Excess provisions or reserves created in good years and released in weaker years to smooth reported earnings over time.", module: "3" },
+  { id: "g33", term: "Channel Stuffing", definition: "Practice of shipping more goods to distributors than they can sell, to inflate current-period revenue at the expense of future-period sales.", module: "3" },
+  { id: "g34", term: "Quality of Earnings", definition: "An assessment of how well reported earnings reflect sustainable, cash-backed operating performance rather than one-off items, aggressive estimates, or accounting choices.", module: "3" },
+  { id: "g35", term: "Capitalization", definition: "Recording an expenditure as an asset on the balance sheet (to be depreciated/amortised over its useful life) rather than expensing it immediately in the income statement.", module: "4" },
+  { id: "g36", term: "Expensing", definition: "Recording an expenditure as a cost in the income statement in the period incurred, reducing current-period profit but not creating a balance sheet asset.", module: "4" },
+  { id: "g37", term: "Depreciation Methods", definition: "Systematic allocation of a tangible asset's cost over its useful life — common methods include straight-line, written-down value (declining balance), and units-of-production.", module: "4" },
+  { id: "g38", term: "Goodwill", definition: "An intangible asset arising on acquisition, representing the excess of purchase consideration over the fair value of identifiable net assets acquired. Tested annually for impairment rather than amortised.", module: "4" },
+  { id: "g39", term: "Intangible Asset", definition: "An identifiable non-monetary asset without physical substance, such as patents, trademarks, licences or capitalised software, recognised when it meets specific recognition criteria.", module: "4" },
+  { id: "g40", term: "Impairment", definition: "A reduction in an asset's carrying value to its recoverable amount when that recoverable amount falls below the carrying value, recognised as a loss in the income statement.", module: "4" },
+  { id: "g41", term: "Recoverable Amount", definition: "The higher of an asset's fair value less costs to sell and its value in use, used as the benchmark against which carrying value is tested for impairment.", module: "4" },
+  { id: "g42", term: "Asset Revaluation", definition: "Restating the carrying value of property, plant and equipment to fair value under the revaluation model, as an alternative to carrying assets at depreciated historical cost.", module: "4" },
+  { id: "g43", term: "R&D Costs", definition: "Research and development expenditure. Research costs are generally expensed as incurred; development costs may be capitalised once specific technical and commercial feasibility criteria are met.", module: "4" },
+  { id: "g44", term: "Deferred Tax Asset", definition: "An amount of income tax recoverable in future periods, arising from deductible temporary differences, unused tax losses, or unused tax credits — recognised only to the extent future taxable profit is probable.", module: "5" },
+  { id: "g45", term: "Deferred Tax Liability", definition: "An amount of income tax payable in future periods, arising from taxable temporary differences between the carrying amount of an asset/liability and its tax base.", module: "5" },
+  { id: "g46", term: "Temporary Difference", definition: "A difference between the carrying amount of an asset or liability and its tax base that will reverse in future periods, giving rise to deferred tax.", module: "5" },
+  { id: "g47", term: "Permanent Difference", definition: "A difference between accounting income and taxable income that never reverses (e.g. certain disallowed expenses), and therefore does not give rise to deferred tax.", module: "5" },
+  { id: "g48", term: "Effective Tax Rate", definition: "Total tax expense (current + deferred) divided by pre-tax accounting profit. Compared against the statutory tax rate to understand the drivers of a firm's actual tax burden.", module: "5" },
+  { id: "g49", term: "Valuation Allowance", definition: "A contra-asset account that reduces a deferred tax asset to the amount that is more likely than not to be realised, when future taxable income is uncertain.", module: "5" },
+  { id: "g50", term: "Tax Loss Carryforward", definition: "A tax loss incurred in the current period that can be used to offset taxable income in future periods, subject to jurisdiction-specific time limits.", module: "5" },
+  { id: "g51", term: "Operating Lease", definition: "Historically, a lease where risks and rewards of ownership were not substantially transferred to the lessee, kept off the lessee's balance sheet. Under Ind AS 116/IFRS 16, most leases are now capitalised regardless of this classification.", module: "6" },
+  { id: "g52", term: "Finance Lease", definition: "A lease that transfers substantially all the risks and rewards of ownership to the lessee; historically capitalised on the lessee's balance sheet as an asset and corresponding liability.", module: "6" },
+  { id: "g53", term: "Right-of-Use Asset", definition: "Under Ind AS 116/IFRS 16, the asset a lessee recognises representing its right to use a leased asset over the lease term, capitalised on the balance sheet alongside a corresponding lease liability.", module: "6" },
+  { id: "g54", term: "Lease Liability", definition: "The present value of future lease payments a lessee is obligated to make, recognised on the balance sheet under the single lease-accounting model.", module: "6" },
+  { id: "g55", term: "Off-Balance-Sheet Financing", definition: "Financing arrangements structured (historically, operating leases) so that related assets and liabilities do not appear on the balance sheet, potentially understating a firm's true leverage.", module: "6" },
+  { id: "g56", term: "EBITDA", definition: "Earnings before interest, tax, depreciation and amortisation. Lease capitalization under Ind AS 116 tends to increase reported EBITDA since lease expense shifts from operating expense to depreciation and interest.", module: "6" },
+  { id: "g57", term: "Amortised Cost", definition: "A measurement basis for financial instruments where the asset/liability is carried at the amount initially recognised, adjusted for principal repayments and amortisation of any difference using the effective interest method.", module: "7" },
+  { id: "g58", term: "FVOCI", definition: "Fair Value through Other Comprehensive Income — a measurement category under Ind AS 109/IFRS 9 where fair value gains/losses are recognised in OCI rather than profit or loss, subject to specific business-model and cash-flow tests.", module: "7" },
+  { id: "g59", term: "FVTPL", definition: "Fair Value through Profit or Loss — the default measurement category for financial instruments under Ind AS 109/IFRS 9 that do not qualify for amortised cost or FVOCI treatment; fair value changes flow through the income statement.", module: "7" },
+  { id: "g60", term: "Expected Credit Loss (ECL)", definition: "A forward-looking impairment model under Ind AS 109/IFRS 9 requiring recognition of expected credit losses on financial assets, rather than waiting for a loss event to occur (the earlier 'incurred loss' model).", module: "7" },
+  { id: "g61", term: "Fair Value Hierarchy", definition: "A three-level classification of fair value inputs: Level 1 (quoted prices in active markets), Level 2 (observable inputs other than quoted prices), and Level 3 (unobservable inputs requiring significant judgement).", module: "7" },
+  { id: "g62", term: "Mark-to-Market", definition: "Valuing an asset or liability at its current market price rather than historical cost, causing reported earnings to reflect period-to-period fluctuations in fair value.", module: "7" },
+  { id: "g63", term: "Hedge Accounting", definition: "An accounting treatment that matches the timing of gains/losses on a hedging instrument with those on the hedged item, reducing the earnings volatility that would otherwise result from mismatched recognition.", module: "7" },
+  { id: "g64", term: "Cash Flow Hedge", definition: "A hedge of exposure to variability in cash flows attributable to a particular risk, where the effective portion of the hedging instrument's gain/loss is initially recognised in OCI.", module: "7" }
+];
+
+
+// =====================
+// STATE
+// =====================
+let isInstructor = false;
+let activeModule = 0;
+let resourceFilter = 'all';
+let glossModuleFilter = 'all';
+let glossAlphaFilter = 'all';
+
+// ⚠️ SETUP REQUIRED — this portal stores Resources / Announcements / Glossary in a Google Sheet
+// so that instructor edits are visible to every student (not just saved on one browser).
+// You need your own Sheet + Apps Script web app — see SETUP_INSTRUCTIONS.md for step-by-step help.
+// Until you replace these two placeholders, the portal still works, but instructor edits will
+// only persist in the current browser (localStorage) instead of syncing to everyone.
+const API_URL = 'https://script.google.com/macros/s/AKfycbwCMMlswUmzkYzsxUlQM4EmbnABVOMqMdpByfIOQYCGCMWubfWK9uEiE9uwtQxYqP4/exec';
+const SHEET_ID = '1hbOSFC8ZGEWi8jKLDfaYv2wXj_nwv2RUVbxwJIH53sI';
+const SHEET_GIDS = {
+  Resources: '0',
+  Announcements: '866610172',
+  Glossary: '1389439697',
+  HiddenGlossary: '424548617'
+};
+
+function apiRead(sheet) {
+  return new Promise((resolve) => {
+    const gid = SHEET_GIDS[sheet];
+    if (!gid) { resolve(null); return; }
+    const callbackName = 'gsCallback_' + sheet.replace(/[^a-z]/gi,'') + '_' + Date.now();
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&gid=${gid}&t=${Date.now()}`;
+    const script = document.createElement('script');
+    let done = false;
+
+    window[callbackName] = function(data) {
+      if (done) return;
+      done = true;
+      try { document.head.removeChild(script); } catch(e) {}
+      delete window[callbackName];
+      try {
+        const cols = data.table.cols.map(c => c.label);
+        const rows = data.table.rows.map(row => {
+          const obj = {};
+          cols.forEach((col, i) => {
+            const cell = row.c[i];
+            obj[col] = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : '') : '';
+          });
+          return obj;
+        }).filter(r => r.id || r.term);
+        resolve(rows);
+      } catch(e) {
+        console.error('gviz parse error for', sheet, e);
+        resolve(null);
+      }
+    };
+
+    script.src = url;
+    script.onerror = function() {
+      if (done) return;
+      done = true;
+      console.error('gviz load failed for', sheet);
+      try { document.head.removeChild(script); } catch(e) {}
+      delete window[callbackName];
+      resolve(null);
+    };
+
+    setTimeout(() => {
+      if (done) return;
+      done = true;
+      console.error('gviz timeout for', sheet);
+      try { document.head.removeChild(script); } catch(e) {}
+      delete window[callbackName];
+      resolve(null);
+    }, 15000);
+
+    document.head.appendChild(script);
+  });
+}
+
+async function apiWrite(sheet, rows) {
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'write', sheet, rows })
+    });
+    if (!resp.ok) {
+      console.error('apiWrite failed for', sheet, '— status:', resp.status);
+    }
+  } catch(e) {
+    console.error('apiWrite error for', sheet, ':', e);
+  }
+}
+
+function saveData(key, val) {
+  try { localStorage.setItem('fsa502_' + key, JSON.stringify(val)); } catch(e) {}
+}
+
+function loadData(key, fallback) {
+  try { const d = localStorage.getItem('fsa502_' + key); return d ? JSON.parse(d) : fallback; } catch(e) { return fallback; }
+}
+
+let hiddenGlossaryIds = new Set();
+
+async function syncFromSheets() {
+  showToast('Loading data...');
+  const [sheetResources, sheetAnn, sheetGloss, sheetHidden] = await Promise.all([
+    apiRead('Resources'),
+    apiRead('Announcements'),
+    apiRead('Glossary'),
+    apiRead('HiddenGlossary')
+  ]);
+
+  // Load hidden glossary IDs
+  if (sheetHidden && Array.isArray(sheetHidden)) {
+    hiddenGlossaryIds = new Set(sheetHidden.map(r => r.id).filter(Boolean));
+  }
+
+  if (sheetResources && Array.isArray(sheetResources)) {
+    const savedIds = new Set(sheetResources.map(r => r.id));
+    const defaults = DEFAULT_RESOURCES.filter(r => !savedIds.has(r.id));
+    resources = [...sheetResources, ...defaults];
+    if (defaults.length > 0) {
+      await apiWrite('Resources', resources);
+    }
+    saveData('resources', resources);
+  }
+
+  if (sheetAnn && Array.isArray(sheetAnn)) {
+    announcements = sheetAnn;
+    saveData('announcements', announcements);
+  }
+
+  if (sheetGloss && Array.isArray(sheetGloss) && sheetGloss.length > 0) {
+    const defaultIds = new Set(DEFAULT_GLOSSARY.map(g => g.id));
+    const extraTerms = sheetGloss.filter(g => !defaultIds.has(g.id));
+    // Apply hidden filter to defaults
+    const visibleDefaults = DEFAULT_GLOSSARY.filter(g => !hiddenGlossaryIds.has(g.id));
+    glossary = [...visibleDefaults, ...extraTerms];
+  } else {
+    glossary = DEFAULT_GLOSSARY.filter(g => !hiddenGlossaryIds.has(g.id));
+  }
+
+  renderResources();
+  renderAnnouncements();
+  renderHomeAnnouncements();
+  buildAlphaFilter();
+  renderGlossary();
+  showToast('✓ Data loaded');
+}
+
+async function saveToSheets(sheet, data) {
+  if (sheet === 'Glossary') {
+    // Only save terms added via portal — defaults are hardcoded in file
+    const defaultIds = new Set(DEFAULT_GLOSSARY.map(g => g.id));
+    const extraTerms = data.filter(g => !defaultIds.has(g.id));
+    await apiWrite(sheet, extraTerms);
+  } else {
+    await apiWrite(sheet, data);
+  }
+}
+
+const DEFAULT_RESOURCES = [
+  // No hardcoded defaults yet — add resources via the Instructor "Add Resource" button.
+  // They will be saved to your Google Sheet automatically once the backend below is configured.
+];
+
+// Merge default resources with saved ones (avoid duplicates)
+function loadResources() {
+  // Do not use localStorage — always rely on Google Sheet for published state
+  // Show only hardcoded defaults on initial load; syncFromSheets will replace them
+  return [...DEFAULT_RESOURCES];
+}
+
+let resources = loadResources();
+localStorage.removeItem('fsa502_resources'); // Always load resources fresh from Google Sheet
+localStorage.removeItem('fsa502_glossary');  // Always reload glossary from defaults + sheet
+let announcements = loadData('announcements', []);
+let glossary = DEFAULT_GLOSSARY;
+
+// =====================
+// ROLE MANAGEMENT
+// =====================
+function toggleRole() {
+  if (isInstructor) {
+    isInstructor = false;
+    updateRoleUI();
+    showToast('Switched to Student view');
+  } else {
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdError').style.display = 'none';
+    openModal('modalPassword');
+    setTimeout(() => document.getElementById('pwdInput').focus(), 100);
+  }
+}
+
+function checkPassword() {
+  const val = document.getElementById('pwdInput').value;
+  if (val === 'FSA2026') {
+    closeModal('modalPassword');
+    isInstructor = true;
+    updateRoleUI();
+    showToast('Instructor mode activated');
+  } else {
+    document.getElementById('pwdError').style.display = 'block';
+    document.getElementById('pwdInput').select();
+  }
+}
+
+function updateRoleUI() {
+  const btn = document.getElementById('roleBtn');
+  const lbl = document.getElementById('roleBtnLabel');
+  if (isInstructor) {
+    btn.classList.add('instructor');
+    lbl.textContent = 'Instructor';
+    btn.querySelector('i').className = 'ti ti-lock-open';
+  } else {
+    btn.classList.remove('instructor');
+    lbl.textContent = 'Student';
+    btn.querySelector('i').className = 'ti ti-user';
+  }
+  document.getElementById('instructor-add-resource').style.display = isInstructor ? 'block' : 'none';
+  document.getElementById('instructor-add-ann').style.display = isInstructor ? 'block' : 'none';
+  document.getElementById('instructor-add-gloss').style.display = isInstructor ? 'block' : 'none';
+  renderResources();
+  renderAnnouncements();
+  renderGlossary();
+  renderHomeAnnouncements();
+}
+
+// =====================
+// TAB SWITCHING
+// =====================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// =====================
+// MODALS
+// =====================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+// =====================
+// TOAST
+// =====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// =====================
+// MODULES TAB
+// =====================
+function selectModule(idx) {
+  activeModule = idx;
+  document.querySelectorAll('.module-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
+  renderModuleContent();
+}
+
+function renderModuleContent() {
+  const m = MODULES_DATA[activeModule];
+  let html = `<div class="card" style="margin-bottom:0">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;">
+      <div style="width:40px;height:40px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0;">${m.id}</div>
+      <div>
+        <div style="font-size:1.05rem;font-weight:700;color:var(--primary)">${m.title}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">${m.sessions.length} Session${m.sessions.length>1?'s':''}</div>
+      </div>
+    </div>
+    ${m.learningOutcome ? `<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:1.25rem;"><div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--primary);margin-bottom:4px">Learning Outcome</div><div style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6">${m.learningOutcome}</div></div>` : ''}`;
+
+  m.sessions.forEach(s => {
+    html += `<div class="session-card">
+      <div class="session-header" onclick="toggleSession('sess${s.num}')">
+        <div>
+          <div class="session-num">Session ${s.num}</div>
+          <div class="session-title">${s.title}</div>
+        </div>
+        <i class="ti ti-chevron-down" id="sessicon${s.num}" style="color:var(--text-muted);transition:transform 0.2s"></i>
+      </div>
+      <div class="session-body" id="sess${s.num}">
+        <div style="margin-bottom:10px">
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px">Topics Covered</div>
+          <ul class="topics-list">
+            ${s.topics.map(t => `<li>${t}</li>`).join('')}
+          </ul>
+        </div>
+        <hr class="divider">
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px">Key Concepts</div>
+          ${s.concepts.map(c => `<span class="concept-tag">${c}</span>`).join('')}
+        </div>
+        ${s.ref ? `<hr class="divider"><div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px">Reference Material</div><div style="font-size:0.82rem;color:var(--text-muted)">${s.ref}</div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  document.getElementById('module-content-area').innerHTML = html;
+}
+
+function toggleSession(id) {
+  const body = document.getElementById(id);
+  const icon = document.getElementById('sessicon' + id.replace('sess', ''));
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (icon) icon.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+// =====================
+// RESOURCES
+// =====================
+const typeIcons = {
+  pdf: 'ti-file-type-pdf',
+  slide: 'ti-presentation',
+  spreadsheet: 'ti-table',
+  video: 'ti-player-play',
+  article: 'ti-news',
+  case: 'ti-briefcase-2',
+  simulation: 'ti-chart-dots'
+};
+const typeLabels = {
+  pdf: 'PDF', slide: 'Slide Deck', spreadsheet: 'Spreadsheet',
+  video: 'Video', article: 'Article', case: 'Case Study', simulation: 'Simulation'
+};
+const moduleNames = {
+  '1': 'Module 1', '2': 'Module 2', '3': 'Module 3', '4': 'Module 4', '5': 'Module 5', '6': 'Module 6', '7': 'Module 7', '8': 'Module 8'
+};
+
+function filterResources(mod, btn) {
+  resourceFilter = mod;
+  document.querySelectorAll('#resourceFilters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderResources();
+}
+
+// Helper — Google Sheets returns booleans as strings "TRUE"/"FALSE" or "true"/"false"
+// Only explicitly false values mean unpublished. Anything else = published.
+function isPublishedVal(val) {
+  if (val === false) return false;
+  if (val === 'false' || val === 'FALSE' || val === 'False') return false;
+  return true; // undefined, '', true, 'TRUE', 'true', 'True' all mean published
+}
+
+// --- FOLDER MANAGEMENT ---
+let folders = {};
+
+function getFoldersForModule(module) {
+  return folders[String(module)] || [];
+}
+
+function populateFolderSelect(module) {
+  const mod = String(module || document.getElementById('res-module')?.value || '1');
+  const sel = document.getElementById('res-folder');
+  if (!sel) return;
+  const modFolders = getFoldersForModule(mod);
+  sel.innerHTML = '<option value="">None (General)</option>' +
+    modFolders.map(f => `<option value="${f}">${f}</option>`).join('');
+}
+
+function toggleFolder(folderId) {
+  const items = document.getElementById(folderId);
+  const toggle = document.getElementById('toggle_' + folderId);
+  if (!items) return;
+  const collapsed = items.classList.toggle('collapsed');
+  if (toggle) toggle.classList.toggle('collapsed', collapsed);
+}
+
+function renameFolder(oldName) {
+  const newName = prompt('Rename folder to:', oldName);
+  if (!newName || !newName.trim() || newName.trim() === oldName) return;
+  const trimmed = newName.trim();
+  const mod = String(resourceFilter === 'all' ? '1' : resourceFilter);
+  if (folders[mod]) {
+    const idx = folders[mod].indexOf(oldName);
+    if (idx > -1) folders[mod][idx] = trimmed;
+  }
+  resources.forEach(r => {
+    if (String(r.module) !== mod) return;
+    if (r.folder === oldName) r.folder = trimmed;
+    if (oldName === 'General' && (!r.folder || r.folder === '')) r.folder = trimmed;
+  });
+  saveFolders();
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  renderResources();
+  showToast('Folder renamed to "' + trimmed + '"');
+}
+
+function deleteFolder(name) {
+  if (!confirm('Delete folder "' + name + '"? Resources will be moved to General.')) return;
+  const mod = String(resourceFilter === 'all' ? '1' : resourceFilter);
+  if (folders[mod]) folders[mod] = folders[mod].filter(f => f !== name);
+  resources.forEach(r => {
+    if (String(r.module) !== mod) return;
+    if (r.folder === name) r.folder = '';
+    if (name === 'General' && (!r.folder || r.folder === '')) r.folder = '';
+  });
+  saveFolders();
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  renderResources();
+  showToast('Folder deleted — resources moved to General');
+}
+
+function saveFolders() {
+  try { localStorage.setItem('fsa502_folders', JSON.stringify(folders)); } catch(e) {}
+}
+
+function loadFolders() {
+  try {
+    const f = localStorage.getItem('fsa502_folders');
+    if (f) folders = JSON.parse(f);
+  } catch(e) {}
+}
+
+function renderResourceItem(r) {
+  const isPublished = isPublishedVal(r.published);
+  return `
+  <div class="resource-item" style="${!isPublished && isInstructor ? 'opacity:0.6;border-left:3px solid var(--warn,#f59e0b)' : ''}">
+    <div class="resource-icon ${r.type}">
+      <i class="ti ${typeIcons[r.type] || 'ti-file'}"></i>
+    </div>
+    <div class="resource-meta">
+      <div class="resource-title">${r.title} ${!isPublished && isInstructor ? '<span style="font-size:0.7rem;padding:2px 7px;border-radius:20px;background:#fef3c7;color:#92400e;font-weight:600;margin-left:6px">DRAFT</span>' : ''}</div>
+      <div class="resource-desc">${r.description || ''}</div>
+      <div class="resource-tags">
+        <span class="tag tag-module">${moduleNames[r.module] || 'M' + r.module}</span>
+        <span class="tag tag-type">${typeLabels[r.type] || r.type}</span>
+        ${r.session ? `<span class="tag tag-session">Session ${r.session}</span>` : ''}
+      </div>
+    </div>
+    <div class="resource-actions">
+      ${r.url ? `<a href="${r.url}" target="_blank" class="btn btn-success btn-sm"><i class="ti ti-external-link"></i> Open</a>` : ''}
+      ${isInstructor ? `
+        <button class="btn btn-sm btn-outline" onclick="editResource('${r.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-sm ${isPublished ? 'btn-warning' : 'btn-primary'}" onclick="togglePublish('${r.id}')" title="${isPublished ? 'Unpublish' : 'Publish'}">
+          <i class="ti ${isPublished ? 'ti-eye-off' : 'ti-eye'}"></i>
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="deleteResource('${r.id}')"><i class="ti ti-trash"></i></button>
+      ` : ''}
+    </div>
+  </div>`;
+}
+
+function renderResources() {
+  const list = document.getElementById('resourcesList');
+  let filtered = resources.filter(r => resourceFilter === 'all' || String(r.module) === String(resourceFilter));
+  if (!isInstructor) filtered = filtered.filter(r => isPublishedVal(r.published));
+
+  // Group resources by folder
+  const folderMap = {};
+  filtered.forEach(r => {
+    const folder = r.folder || 'General';
+    if (!folderMap[folder]) folderMap[folder] = [];
+    folderMap[folder].push(r);
+  });
+
+  // Show empty folders that exist for current module
+  if (resourceFilter !== 'all') {
+    getFoldersForModule(resourceFilter).forEach(f => { if (!folderMap[f]) folderMap[f] = []; });
+  }
+
+  // Always ensure unfoldered resources still appear (under no folder header)
+
+  // If truly nothing — no resources and no named folders
+  const hasContent = filtered.length > 0 || Object.keys(folderMap).some(k => k !== 'General');
+  if (!hasContent && !(getFoldersForModule(resourceFilter !== 'all' ? resourceFilter : '1').length)) {
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-folder-x"></i><p>No resources yet${resourceFilter !== 'all' ? ' for this module' : ''}. ${isInstructor ? 'Add one above.' : 'Check back later.'}</p></div>`;
+    return;
+  }
+
+  const folderOrder = Object.keys(folderMap).sort((a, b) => {
+    if (a === 'General') return -1;
+    if (b === 'General') return 1;
+    return a.localeCompare(b);
+  });
+
+  list.innerHTML = folderOrder.map(folder => {
+    const items = folderMap[folder];
+    const folderId = 'folder_' + folder.replace(/[^a-z0-9]/gi, '_');
+
+    // Resources with no folder assigned — render flat, no folder wrapper
+    if (folder === 'General') {
+      return items.map(r => renderResourceItem(r)).join('');
+    }
+
+    // Named folders — render with collapsible folder header
+    return `
+      <div class="folder-section">
+        <div class="folder-header" onclick="toggleFolder('${folderId}')">
+          <div class="folder-name">
+            <i class="ti ti-folder" style="color:var(--primary)"></i>
+            ${folder}
+            <span class="folder-count">${items.length} item${items.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${isInstructor ? `
+              <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();renameFolder('${folder}')" title="Rename" style="padding:3px 8px;font-size:0.75rem"><i class="ti ti-pencil"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteFolder('${folder}')" title="Delete" style="padding:3px 8px;font-size:0.75rem"><i class="ti ti-trash"></i></button>
+            ` : ''}
+            <i class="ti ti-chevron-down folder-toggle" id="toggle_${folderId}"></i>
+          </div>
+        </div>
+        <div class="folder-items" id="${folderId}">
+          ${items.length > 0
+            ? items.map(r => renderResourceItem(r)).join('')
+            : `<div style="padding:10px 14px;font-size:0.85rem;color:var(--text-muted);font-style:italic">No resources in this folder yet.</div>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function promptNewFolder() {
+  // Always use the currently active module filter
+  const mod = String(resourceFilter !== 'all' ? resourceFilter : '1');
+  const name = prompt('Enter new folder name for Module ' + mod + ':');
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+  if (!folders[mod]) folders[mod] = [];
+  if (folders[mod].includes(trimmed)) { showToast('Folder already exists'); return; }
+  folders[mod].push(trimmed);
+  saveFolders();
+  populateFolderSelect(mod);
+  const sel = document.getElementById('res-folder');
+  if (sel) sel.value = trimmed;
+  renderResources();
+  showToast('Folder "' + trimmed + '" created in Module ' + mod);
+}
+
+
+function renameFolder(oldName) {
+  const newName = prompt('Rename folder to:', oldName);
+  if (!newName || !newName.trim() || newName.trim() === oldName) return;
+  const trimmed = newName.trim();
+  const mod = String(resourceFilter === 'all' ? '1' : resourceFilter);
+  // Update folder list for this module only
+  if (folders[mod]) {
+    const idx = folders[mod].indexOf(oldName);
+    if (idx > -1) folders[mod][idx] = trimmed;
+  }
+  // Update resources in this module only
+  resources.forEach(r => {
+    if (String(r.module) !== mod) return;
+    if (r.folder === oldName) r.folder = trimmed;
+    if (oldName === 'General' && (!r.folder || r.folder === '')) r.folder = trimmed;
+  });
+  saveFolders();
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  renderResources();
+  showToast('Folder renamed to "' + trimmed + '" in Module ' + mod);
+}
+
+function deleteFolder(name) {
+  if (!confirm('Delete folder "' + name + '"? Resources will be moved to General.')) return;
+  const mod = String(resourceFilter === 'all' ? '1' : resourceFilter);
+  if (folders[mod]) folders[mod] = folders[mod].filter(f => f !== name);
+  // Move resources in this module only back to General
+  resources.forEach(r => {
+    if (String(r.module) !== mod) return;
+    if (r.folder === name) r.folder = '';
+    if (name === 'General' && (!r.folder || r.folder === '')) r.folder = '';
+  });
+  saveFolders();
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  renderResources();
+  showToast('Folder deleted — resources moved to General');
+}
+
+function saveFolders() {
+  try { localStorage.setItem('fsa502_folders', JSON.stringify(folders)); } catch(e) {}
+}
+
+function loadFolders() {
+  try {
+    const f = localStorage.getItem('fsa502_folders');
+    if (f) folders = JSON.parse(f);
+  } catch(e) {}
+}
+
+function togglePublish(id) {
+  if (!isInstructor) return;
+  const r = resources.find(r => r.id === id);
+  if (!r) return;
+  const isPublished = isPublishedVal(r.published);
+  r.published = isPublished ? 'FALSE' : 'TRUE';
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  renderResources();
+  showToast(r.published ? '✓ Resource published — students can now see it' : 'Resource unpublished — hidden from students');
+}
+
+let editingResourceId = null;
+
+function editResource(id) {
+  if (!isInstructor) return;
+  const r = resources.find(r => r.id === id);
+  if (!r) return;
+  editingResourceId = id;
+  document.getElementById('res-title').value = r.title || '';
+  document.getElementById('res-desc').value = r.description || '';
+  document.getElementById('res-module').value = r.module || '1';
+  document.getElementById('res-session').value = r.session || '';
+  document.getElementById('res-type').value = r.type || 'pdf';
+  document.getElementById('res-url').value = r.url || '';
+  populateFolderSelect(r.module);
+  const folderSel = document.getElementById('res-folder');
+  if (folderSel) folderSel.value = r.folder || '';
+  document.querySelector('#modalResource .modal-title').innerHTML = '<i class="ti ti-pencil"></i> Edit Resource';
+  document.querySelector('#modalResource .btn-primary').innerHTML = '<i class="ti ti-check"></i> Save Changes';
+  openModal('modalResource');
+}
+
+function saveResource() {
+  const title = document.getElementById('res-title').value.trim();
+  const desc = document.getElementById('res-desc').value.trim();
+  const module = document.getElementById('res-module').value;
+  const session = document.getElementById('res-session').value;
+  const type = document.getElementById('res-type').value;
+  const url = document.getElementById('res-url').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+
+  const folder = document.getElementById('res-folder')?.value || '';
+
+  if (editingResourceId) {
+    const r = resources.find(r => r.id === editingResourceId);
+    if (r) {
+      r.title = title; r.description = desc; r.module = module;
+      r.session = session; r.type = type; r.url = url; r.folder = folder;
+    }
+    editingResourceId = null;
+    showToast('Resource updated');
+  } else {
+    resources.push({ id: 'r' + Date.now(), title, description: desc, module, session, type, url, folder, published: 'FALSE' });
+    showToast('Resource added as Draft — click Publish when ready');
+  }
+
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  closeModal('modalResource');
+  document.querySelector('#modalResource .modal-title').innerHTML = '<i class="ti ti-folder-plus"></i> Add Resource';
+  document.querySelector('#modalResource .btn-primary').innerHTML = '<i class="ti ti-check"></i> Add Resource';
+  ['res-title','res-desc','res-session','res-url'].forEach(id => document.getElementById(id).value = '');
+  renderResources();
+}
+
+function deleteResource(id) {
+  if (!isInstructor) return;
+  resources = resources.filter(r => r.id !== id);
+  saveData('resources', resources);
+  saveToSheets('Resources', resources);
+  renderResources();
+  showToast('Resource deleted');
+}
+
+// =====================
+// ANNOUNCEMENTS
+// =====================
+function renderAnnouncements() {
+  const list = document.getElementById('announcementsList');
+  if (announcements.length === 0) {
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-speakerphone"></i><p>No announcements yet.</p></div>`;
+    return;
+  }
+  list.innerHTML = [...announcements].reverse().map(a => `
+    <div class="ann-item ${a.priority}">
+      <div class="ann-header">
+        <div>
+          <div class="ann-title">${a.title}</div>
+          <div class="ann-body">${a.body}</div>
+          <div class="ann-footer">
+            <span class="priority-badge ${a.priority}">${a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}</span>
+            ${a.module ? `<span class="tag tag-module">Module ${a.module}</span>` : ''}
+            <span class="ann-date"><i class="ti ti-clock" style="font-size:0.75rem"></i> ${a.date}</span>
+          </div>
+        </div>
+        ${isInstructor ? `<button class="btn btn-danger btn-sm" style="flex-shrink:0" onclick="deleteAnnouncement('${a.id}')"><i class="ti ti-trash"></i></button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHomeAnnouncements() {
+  const el = document.getElementById('homeAnnouncementsPreview');
+  const recent = [...announcements].reverse().slice(0, 3);
+  if (recent.length === 0) {
+    el.innerHTML = `<div class="empty-state" style="padding:1.5rem 1rem;"><i class="ti ti-speakerphone"></i><p>No announcements yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = recent.map(a => `
+    <div style="padding:8px 10px;border-radius:6px;margin-bottom:6px;background:var(--surface2);border-left:3px solid ${a.priority==='urgent'?'var(--danger)':a.priority==='important'?'var(--accent)':'var(--primary)'}">
+      <div style="font-size:0.85rem;font-weight:600;">${a.title}</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${a.date}</div>
+    </div>
+  `).join('');
+}
+
+function saveAnnouncement() {
+  const title = document.getElementById('ann-title').value.trim();
+  const body = document.getElementById('ann-body').value.trim();
+  const priority = document.getElementById('ann-priority').value;
+  const module = document.getElementById('ann-module').value;
+  if (!title || !body) { alert('Please fill title and message.'); return; }
+  const now = new Date();
+  const date = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  announcements.push({ id: 'a' + Date.now(), title, body, priority, module, date });
+  saveData('announcements', announcements);
+  saveToSheets('Announcements', announcements);
+  closeModal('modalAnn');
+  ['ann-title','ann-body'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ann-priority').value = 'normal';
+  document.getElementById('ann-module').value = '';
+  renderAnnouncements();
+  renderHomeAnnouncements();
+  showToast('Announcement posted — saved to Google Sheet');
+}
+
+function deleteAnnouncement(id) {
+  if (!isInstructor) return;
+  announcements = announcements.filter(a => a.id !== id);
+  saveData('announcements', announcements);
+  saveToSheets('Announcements', announcements);
+  renderAnnouncements();
+  renderHomeAnnouncements();
+  showToast('Announcement deleted');
+}
+
+// =====================
+// GLOSSARY
+// =====================
+function buildAlphaFilter() {
+  const letters = [...new Set(glossary.map(g => g.term[0].toUpperCase()))].sort();
+  const all = ['All', ...letters];
+  document.getElementById('alphaFilter').innerHTML = all.map(l =>
+    `<button class="alpha-btn ${l === 'All' ? 'active' : ''}" onclick="setAlpha('${l}', this)">${l}</button>`
+  ).join('');
+}
+
+function setAlpha(l, btn) {
+  glossAlphaFilter = l === 'All' ? 'all' : l;
+  document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGlossary();
+}
+
+function filterGlossModule(mod, btn) {
+  glossModuleFilter = mod;
+  document.querySelectorAll('[id^="gmod-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGlossary();
+}
+
+function renderGlossary() {
+  const search = (document.getElementById('glossSearch').value || '').toLowerCase();
+  let filtered = glossary.filter(g => {
+    const matchSearch = !search || g.term.toLowerCase().includes(search) || g.definition.toLowerCase().includes(search);
+    const matchMod = glossModuleFilter === 'all' || String(g.module) === String(glossModuleFilter);
+    const matchAlpha = glossAlphaFilter === 'all' || g.term[0].toUpperCase() === glossAlphaFilter;
+    return matchSearch && matchMod && matchAlpha;
+  }).sort((a, b) => a.term.localeCompare(b.term));
+
+  const list = document.getElementById('glossaryList');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-search-off"></i><p>No terms match your filter.</p></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(g => `
+    <div class="gloss-item">
+      <div class="gloss-letter">${g.term[0].toUpperCase()}</div>
+      <div class="gloss-content">
+        <div class="gloss-term">${g.term}</div>
+        <div class="gloss-def">${g.definition}</div>
+        <div class="gloss-footer">
+          <span class="tag tag-module">Module ${g.module}</span>
+          ${isInstructor ? `<button class="btn btn-danger btn-sm" onclick="deleteGlossary('${g.id}')"><i class="ti ti-trash"></i></button>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveGlossaryTerm() {
+  const term = document.getElementById('gloss-term').value.trim();
+  const def = document.getElementById('gloss-def').value.trim();
+  const module = document.getElementById('gloss-module').value;
+  if (!term || !def) { alert('Please fill in the term and definition.'); return; }
+  const newTerm = { id: 'g' + Date.now(), term, definition: def, module };
+  glossary.push(newTerm);
+  saveData('glossary', glossary);
+  saveToSheets('Glossary', glossary);
+  closeModal('modalGloss');
+  ['gloss-term','gloss-def'].forEach(id => document.getElementById(id).value = '');
+  buildAlphaFilter();
+  renderGlossary();
+  showToast('Term added — saved to Google Sheet');
+}
+
+async function deleteGlossary(id) {
+  if (!isInstructor) return;
+  const defaultIds = new Set(DEFAULT_GLOSSARY.map(g => g.id));
+  glossary = glossary.filter(g => g.id !== id);
+  // If it's a hardcoded default term, save its ID to HiddenGlossary sheet
+  if (defaultIds.has(id)) {
+    hiddenGlossaryIds.add(id);
+    await apiWrite('HiddenGlossary', [...hiddenGlossaryIds].map(hid => ({ id: hid })));
+  }
+  saveData('glossary', glossary);
+  saveToSheets('Glossary', glossary);
+  buildAlphaFilter();
+  renderGlossary();
+  showToast('Term deleted');
+}
+
+// =====================
+// INIT
+// =====================
+function init() {
+  loadFolders();
+  renderModuleContent();
+  renderResources();
+  renderAnnouncements();
+  renderHomeAnnouncements();
+  buildAlphaFilter();
+  renderGlossary();
+  document.getElementById('gmod-all').classList.add('active');
+  syncFromSheets();
+}
+
+init();
+</script>
+</body>
+</html>
