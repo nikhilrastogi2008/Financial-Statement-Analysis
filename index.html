@@ -561,8 +561,8 @@
         <div class="card-title"><i class="ti ti-books"></i> Prescribed Textbooks</div>
         <div style="padding:10px 12px;background:var(--surface2);border-radius:6px;margin-bottom:8px;border-left:3px solid var(--primary);">
           <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--primary);margin-bottom:3px;">Primary Textbook</div>
-          <div style="font-size:0.88rem;font-weight:600;">The Analysis and Use of Financial Statements (GW)</div>
-          <div style="font-size:0.78rem;color:var(--text-muted);">Gerald I. White, Ashwinpaul C. Sondhi &amp; Dov Fried · Wiley India Edition</div>
+          <div style="font-size:0.88rem;font-weight:600;">International Financial Statement Analysis (CFA Institute)</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">Robinson, Henry, Pirie, Broihahn &amp; Jorissen · Wiley</div>
         </div>
         <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--warn);margin-bottom:6px;margin-top:10px;">Reference Books</div>
         <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;border-left:3px solid var(--accent);">
@@ -1392,11 +1392,6 @@ let resourceFilter = 'all';
 let glossModuleFilter = 'all';
 let glossAlphaFilter = 'all';
 
-// ⚠️ SETUP REQUIRED — this portal stores Resources / Announcements / Glossary in a Google Sheet
-// so that instructor edits are visible to every student (not just saved on one browser).
-// You need your own Sheet + Apps Script web app — see SETUP_INSTRUCTIONS.md for step-by-step help.
-// Until you replace these two placeholders, the portal still works, but instructor edits will
-// only persist in the current browser (localStorage) instead of syncing to everyone.
 const API_URL = 'https://script.google.com/macros/s/AKfycbwCMMlswUmzkYzsxUlQM4EmbnABVOMqMdpByfIOQYCGCMWubfWK9uEiE9uwtQxYqP4/exec';
 const SHEET_ID = '1hbOSFC8ZGEWi8jKLDfaYv2wXj_nwv2RUVbxwJIH53sI';
 const SHEET_GIDS = {
@@ -1685,8 +1680,7 @@ function renderModuleContent() {
           <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px">Key Concepts</div>
           ${s.concepts.map(c => `<span class="concept-tag">${c}</span>`).join('')}
         </div>
-        ${s.ref ? `<hr class="divider"><div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px">Reference Material</div><div style="font-size:0.82rem;color:var(--text-muted)">${s.ref}</div>` : ''}
-      </div>
+        </div>
     </div>`;
   });
 
