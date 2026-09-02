@@ -485,6 +485,10 @@
     <span class="header-sub">PGDM / PGDM (Finance) / PGDM (Marketing), Term V &nbsp;|&nbsp; AY 2026-27 &nbsp;|&nbsp; Prof. Nikhil Rastogi</span>
   </div>
   <div class="header-right">
+    <span id="studentIdDisplay" style="font-size:0.78rem;color:var(--text-muted);margin-right:10px;display:none;">
+      <i class="ti ti-user-circle"></i> <span id="studentIdText"></span>
+      <a href="#" onclick="event.preventDefault(); openIdentityGate(true);" style="color:var(--primary);margin-left:4px;">(change)</a>
+    </span>
     <button class="role-badge" id="roleBtn" onclick="toggleRole()">
       <i class="ti ti-user"></i>
       <span id="roleBtnLabel">Student</span>
@@ -508,6 +512,9 @@
   </div>
   <div class="nav-tab" onclick="switchTab('glossary')" id="tab-glossary">
     <i class="ti ti-vocabulary"></i> Glossary
+  </div>
+  <div class="nav-tab" onclick="switchTab('analytics')" id="tab-analytics" style="display:none;">
+    <i class="ti ti-chart-bar"></i> Analytics
   </div>
 </nav>
 
@@ -713,6 +720,29 @@
     <div id="glossaryList"></div>
   </div>
 
+  <div class="tab-panel" id="panel-analytics">
+    <div class="section-header">
+      <div class="section-title"><i class="ti ti-chart-bar"></i> Engagement Analytics</div>
+      <button class="btn btn-outline btn-sm" onclick="renderAnalytics()"><i class="ti ti-refresh"></i> Refresh</button>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;">
+      Based on the <strong>ActivityLog</strong> tab in your Google Sheet. Logins are recorded once per browser session; tab views and resource opens are logged as they happen.
+    </p>
+    <div id="analyticsSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.5rem;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+      <div>
+        <div class="section-title" style="font-size:0.95rem;margin-bottom:0.6rem;"><i class="ti ti-download"></i> Most Opened Resources</div>
+        <div id="analyticsResourceTable"></div>
+      </div>
+      <div>
+        <div class="section-title" style="font-size:0.95rem;margin-bottom:0.6rem;"><i class="ti ti-users"></i> Students Seen</div>
+        <div id="analyticsStudentTable" style="max-height:360px;overflow-y:auto;"></div>
+      </div>
+    </div>
+    <div class="section-title" style="font-size:0.95rem;margin:1.5rem 0 0.6rem;"><i class="ti ti-activity"></i> Recent Activity</div>
+    <div id="analyticsRecentTable" style="max-height:400px;overflow-y:auto;"></div>
+  </div>
+
 </main>
 
 <!-- ============ MODALS ============ -->
@@ -729,6 +759,26 @@
     <div class="form-actions">
       <button class="btn btn-outline" onclick="closeModal('modalPassword')">Cancel</button>
       <button class="btn btn-primary" onclick="checkPassword()"><i class="ti ti-login"></i> Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Identity Gate Modal (mandatory on first visit) -->
+<div class="modal-overlay" id="modalIdentity">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title"><i class="ti ti-id-badge-2"></i> Welcome to FIA 502</div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;">Please enter your name and enrolment ID to access the course portal. This is used only to track engagement with course material.</p>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input type="text" class="form-control" id="idName" placeholder="e.g. Priya Sharma" onkeydown="if(event.key==='Enter')document.getElementById('idEnroll').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Enrolment ID</label>
+      <input type="text" class="form-control" id="idEnroll" placeholder="e.g. PGDM26123" onkeydown="if(event.key==='Enter')submitIdentity()">
+    </div>
+    <div id="idError" style="color:var(--danger);font-size:0.8rem;margin-bottom:0.75rem;display:none;">Please enter both your name and enrolment ID.</div>
+    <div class="form-actions">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitIdentity()"><i class="ti ti-check"></i> Continue to Portal</button>
     </div>
   </div>
 </div>
@@ -1398,8 +1448,25 @@ const SHEET_GIDS = {
   Resources: '0',
   Announcements: '866610172',
   Glossary: '1389439697',
-  HiddenGlossary: '424548617'
+  HiddenGlossary: '424548617',
+  ActivityLog: '1007139039'
 };
+
+async function apiAppend(sheet, rows) {
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'append', sheet, rows })
+    });
+    if (!resp.ok) {
+      console.error('apiAppend failed for', sheet, '— status:', resp.status);
+    }
+  } catch(e) {
+    console.error('apiAppend error for', sheet, ':', e);
+  }
+}
 
 function apiRead(sheet) {
   return new Promise((resolve) => {
@@ -1558,6 +1625,77 @@ let announcements = loadData('announcements', []);
 let glossary = DEFAULT_GLOSSARY;
 
 // =====================
+// STUDENT IDENTITY & ACTIVITY LOGGING
+// =====================
+function getIdentity() {
+  try {
+    const d = localStorage.getItem('fsa502_identity');
+    return d ? JSON.parse(d) : null;
+  } catch(e) { return null; }
+}
+
+function openIdentityGate(prefill) {
+  if (prefill) {
+    const cur = getIdentity();
+    if (cur) {
+      document.getElementById('idName').value = cur.name;
+      document.getElementById('idEnroll').value = cur.enrollmentId;
+    }
+  }
+  document.getElementById('idError').style.display = 'none';
+  openModal('modalIdentity');
+}
+
+function submitIdentity() {
+  const name = document.getElementById('idName').value.trim();
+  const enrollmentId = document.getElementById('idEnroll').value.trim();
+  if (!name || !enrollmentId) {
+    document.getElementById('idError').style.display = 'block';
+    return;
+  }
+  const isNew = !getIdentity();
+  const identity = { name, enrollmentId };
+  try { localStorage.setItem('fsa502_identity', JSON.stringify(identity)); } catch(e) {}
+  closeModal('modalIdentity');
+  updateIdentityUI();
+  if (isNew) logActivity('login', 'first visit');
+}
+
+function updateIdentityUI() {
+  const identity = getIdentity();
+  const el = document.getElementById('studentIdDisplay');
+  if (identity) {
+    document.getElementById('studentIdText').textContent = identity.name + ' (' + identity.enrollmentId + ')';
+    el.style.display = 'inline-flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function ensureIdentity() {
+  if (!getIdentity()) {
+    openIdentityGate(false);
+  } else {
+    updateIdentityUI();
+  }
+}
+
+function logActivity(eventType, detail, module) {
+  const identity = getIdentity() || { name: 'Unknown', enrollmentId: 'Unknown' };
+  const row = {
+    id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+    timestamp: new Date().toISOString(),
+    name: identity.name,
+    enrollmentId: identity.enrollmentId,
+    eventType: eventType,
+    detail: detail || '',
+    module: module || '',
+    userAgent: navigator.userAgent
+  };
+  apiAppend('ActivityLog', [row]);
+}
+
+// =====================
 // ROLE MANAGEMENT
 // =====================
 function toggleRole() {
@@ -1579,6 +1717,7 @@ function checkPassword() {
     closeModal('modalPassword');
     isInstructor = true;
     updateRoleUI();
+    logActivity('instructor_login', 'instructor mode activated');
     showToast('Instructor mode activated');
   } else {
     document.getElementById('pwdError').style.display = 'block';
@@ -1601,6 +1740,7 @@ function updateRoleUI() {
   document.getElementById('instructor-add-resource').style.display = isInstructor ? 'block' : 'none';
   document.getElementById('instructor-add-ann').style.display = isInstructor ? 'block' : 'none';
   document.getElementById('instructor-add-gloss').style.display = isInstructor ? 'block' : 'none';
+  document.getElementById('tab-analytics').style.display = isInstructor ? 'flex' : 'none';
   renderResources();
   renderAnnouncements();
   renderGlossary();
@@ -1615,6 +1755,8 @@ function switchTab(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  logActivity('tab_view', name);
+  if (name === 'analytics' && isInstructor) renderAnalytics();
 }
 
 // =====================
@@ -1623,6 +1765,7 @@ function switchTab(name) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => {
+  if (m.id === 'modalIdentity') return; // mandatory — no dismiss via backdrop click
   m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
 });
 
@@ -1820,7 +1963,7 @@ function renderResourceItem(r) {
       </div>
     </div>
     <div class="resource-actions">
-      ${r.url ? `<a href="${r.url}" target="_blank" class="btn btn-success btn-sm"><i class="ti ti-external-link"></i> Open</a>` : ''}
+      ${r.url ? `<a href="${r.url}" target="_blank" class="btn btn-success btn-sm" onclick='logActivity("resource_open", ${JSON.stringify(r.title).replace(/'/g, "&#39;")}, ${JSON.stringify(String(r.module))})'><i class="ti ti-external-link"></i> Open</a>` : ''}
       ${isInstructor ? `
         <button class="btn btn-sm btn-outline" onclick="editResource('${r.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
         <button class="btn btn-sm ${isPublished ? 'btn-warning' : 'btn-primary'}" onclick="togglePublish('${r.id}')" title="${isPublished ? 'Unpublish' : 'Publish'}">
@@ -2203,10 +2346,95 @@ async function deleteGlossary(id) {
 }
 
 // =====================
+// ANALYTICS
+// =====================
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function renderAnalytics() {
+  const summaryEl = document.getElementById('analyticsSummary');
+  const resEl = document.getElementById('analyticsResourceTable');
+  const studEl = document.getElementById('analyticsStudentTable');
+  const recentEl = document.getElementById('analyticsRecentTable');
+  summaryEl.innerHTML = '<div style="grid-column:1/-1;color:var(--text-muted);font-size:0.85rem;">Loading…</div>';
+
+  const log = await apiRead('ActivityLog');
+  if (!log || !Array.isArray(log)) {
+    summaryEl.innerHTML = '<div style="grid-column:1/-1;color:var(--danger);font-size:0.85rem;">Could not load ActivityLog. Make sure the ActivityLog tab exists and its gid is set in SHEET_GIDS.</div>';
+    resEl.innerHTML = ''; studEl.innerHTML = ''; recentEl.innerHTML = '';
+    return;
+  }
+
+  const logins = log.filter(r => r.eventType === 'login' || r.eventType === 'instructor_login');
+  const opens = log.filter(r => r.eventType === 'resource_open');
+  const students = new Map(); // enrollmentId -> {name, enrollmentId, lastSeen, events}
+  log.forEach(r => {
+    if (!r.enrollmentId || r.enrollmentId === 'Unknown') return;
+    const cur = students.get(r.enrollmentId) || { name: r.name, enrollmentId: r.enrollmentId, lastSeen: r.timestamp, events: 0 };
+    cur.events++;
+    if (r.timestamp > cur.lastSeen) cur.lastSeen = r.timestamp;
+    students.set(r.enrollmentId, cur);
+  });
+
+  summaryEl.innerHTML = `
+    <div class="info-item"><div class="info-label">Unique Students</div><div class="info-value">${students.size}</div></div>
+    <div class="info-item"><div class="info-label">Total Logins</div><div class="info-value">${logins.length}</div></div>
+    <div class="info-item"><div class="info-label">Resource Opens</div><div class="info-value">${opens.length}</div></div>
+    <div class="info-item"><div class="info-label">Total Events Logged</div><div class="info-value">${log.length}</div></div>
+  `;
+
+  // Most opened resources
+  const resCounts = new Map();
+  opens.forEach(r => resCounts.set(r.detail, (resCounts.get(r.detail) || 0) + 1));
+  const resSorted = [...resCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
+  resEl.innerHTML = resSorted.length ? `
+    <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+      ${resSorted.map(([title, count]) => `
+        <tr style="border-bottom:1px solid var(--border,#eee);">
+          <td style="padding:6px 4px;">${escapeHtml(title)}</td>
+          <td style="padding:6px 4px;text-align:right;font-weight:700;">${count}</td>
+        </tr>`).join('')}
+    </table>` : '<div style="color:var(--text-muted);font-size:0.82rem;">No resource opens logged yet.</div>';
+
+  // Students table
+  const studSorted = [...students.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
+  studEl.innerHTML = studSorted.length ? `
+    <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+      <tr style="font-weight:700;border-bottom:2px solid var(--border,#ddd);">
+        <td style="padding:6px 4px;">Name</td><td style="padding:6px 4px;">Enrolment ID</td><td style="padding:6px 4px;text-align:right;">Events</td>
+      </tr>
+      ${studSorted.map(s => `
+        <tr style="border-bottom:1px solid var(--border,#eee);">
+          <td style="padding:6px 4px;">${escapeHtml(s.name)}</td>
+          <td style="padding:6px 4px;">${escapeHtml(s.enrollmentId)}</td>
+          <td style="padding:6px 4px;text-align:right;">${s.events}</td>
+        </tr>`).join('')}
+    </table>` : '<div style="color:var(--text-muted);font-size:0.82rem;">No students logged yet.</div>';
+
+  // Recent activity
+  const recent = [...log].sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 50);
+  recentEl.innerHTML = recent.length ? `
+    <table style="width:100%;font-size:0.8rem;border-collapse:collapse;">
+      <tr style="font-weight:700;border-bottom:2px solid var(--border,#ddd);">
+        <td style="padding:6px 4px;">Time</td><td style="padding:6px 4px;">Name</td><td style="padding:6px 4px;">Event</td><td style="padding:6px 4px;">Detail</td>
+      </tr>
+      ${recent.map(r => `
+        <tr style="border-bottom:1px solid var(--border,#eee);">
+          <td style="padding:6px 4px;white-space:nowrap;">${new Date(r.timestamp).toLocaleString()}</td>
+          <td style="padding:6px 4px;">${escapeHtml(r.name)}</td>
+          <td style="padding:6px 4px;">${escapeHtml(r.eventType)}</td>
+          <td style="padding:6px 4px;">${escapeHtml(r.detail)}</td>
+        </tr>`).join('')}
+    </table>` : '<div style="color:var(--text-muted);font-size:0.82rem;">No activity logged yet.</div>';
+}
+
+// =====================
 // INIT
 // =====================
 function init() {
   loadFolders();
+  ensureIdentity();
   renderModuleContent();
   renderResources();
   renderAnnouncements();
