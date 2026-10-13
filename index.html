@@ -537,6 +537,16 @@
   .pr-admin-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
   .pr-switch { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface); font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer; }
   .pr-switch.on { border-color: var(--success); background: var(--success-light); color: var(--success); }
+  .pr-mgroup .card-title { display: flex; justify-content: space-between; gap: 8px; }
+  .pr-mcount { font-weight: 600; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+  .pr-mrow { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border); }
+  .pr-mrow.is-hidden .pr-mq { text-decoration: line-through; color: var(--text-muted); }
+  .pr-mbody { min-width: 0; }
+  .pr-mq { font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
+  .pr-ma { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .pr-mtag { background: var(--surface2); border-radius: 8px; padding: 1px 7px; margin-left: 6px; font-size: 0.68rem; font-weight: 700; color: var(--primary); }
+  .pr-msub { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 10px 0 0; padding-top: 6px; border-top: 2px solid var(--border); }
+  .pr-mempty { font-size: 0.82rem; color: var(--text-muted); padding: 6px 0; }
   .pr-admin-note { font-size: 0.78rem; color: var(--text-muted); }
 </style>
 </head>
@@ -797,10 +807,12 @@
       <button class="filter-btn active" id="pr-btn-quiz" onclick="setPracticeView('quiz')">Module Quizzes</button>
       <button class="filter-btn" id="pr-btn-examples" onclick="setPracticeView('examples')">Worked Examples</button>
       <button class="filter-btn" id="pr-btn-formulas" onclick="setPracticeView('formulas')">Formula Sheet</button>
+      <button class="filter-btn" id="pr-btn-manage" onclick="setPracticeView('manage')" style="display:none;">Manage Questions</button>
     </div>
     <div id="pr-sec-quiz"></div>
     <div id="pr-sec-examples" style="display:none;"></div>
     <div id="pr-sec-formulas" style="display:none;"></div>
+    <div id="pr-sec-manage" style="display:none;"></div>
   </div>
 
   <div class="tab-panel" id="panel-analytics">
@@ -2761,6 +2773,8 @@ async function loadPractice() {
   renderPracticeIfIdle();
 }
 
+function visibleQs(id) { return (PRACTICE.quizzes[id] || []).filter(q => !q.hidden); }
+
 function renderPracticeIfIdle() {
   // Do not disturb a quiz in progress
   if (!(practiceView === 'quiz' && quizState)) setPracticeView(practiceView);
@@ -2820,15 +2834,18 @@ function shuffleArr(a) {
 function renderPractice() { setPracticeView(practiceView); loadPractice(); }
 
 function setPracticeView(v) {
+  if (v === 'manage' && !isInstructor) v = 'quiz';
   practiceView = v;
   renderPracticeAdmin();
-  ['quiz', 'examples', 'formulas'].forEach(k => {
+  document.getElementById('pr-btn-manage').style.display = isInstructor ? '' : 'none';
+  ['quiz', 'examples', 'formulas', 'manage'].forEach(k => {
     document.getElementById('pr-sec-' + k).style.display = (k === v) ? 'block' : 'none';
     document.getElementById('pr-btn-' + k).classList.toggle('active', k === v);
   });
   if (v === 'quiz') renderQuizHome();
   if (v === 'examples') renderExamples();
   if (v === 'formulas') renderFormulas();
+  if (v === 'manage') renderManage();
 }
 
 function moduleName(id) {
@@ -2840,18 +2857,18 @@ function renderQuizHome() {
   quizState = null;
   const best = getQuizBest();
   const el = document.getElementById('pr-sec-quiz');
-  const anyOpen = PRACTICE_MODULE_IDS.some(id => canUsePractice(id) && PRACTICE.quizzes[id]);
+  const anyOpen = PRACTICE_MODULE_IDS.some(id => canUsePractice(id) && visibleQs(id).length);
   let html = '<p class="pr-intro">Pick a module for a short self-check. Options are shuffled each attempt. Your best scores are remembered on this device.</p><div class="pr-quiz-grid">';
   PRACTICE_MODULE_IDS.forEach(id => {
-    const qs = PRACTICE.quizzes[id];
+    const qs = PRACTICE.quizzes[id] ? visibleQs(id) : null;
     const n = qs ? qs.length : 0;
     const b = best['m' + id];
-    const open = canUsePractice(id) && qs;
+    const open = canUsePractice(id) && qs && n > 0;
     if (!open) {
       html += `<div class="pr-quiz-card pr-locked">
         <span class="pr-quiz-num">M${Number(id)} <i class="ti ti-lock"></i></span>
         <span class="pr-quiz-title">${escapeHtml(moduleName(id))}</span>
-        <span class="pr-quiz-meta">${canUsePractice(id) && !practiceLoaded ? 'Loading...' : 'Not open yet. Your instructor will release it.'}</span>
+        <span class="pr-quiz-meta">${canUsePractice(id) && !practiceLoaded ? 'Loading...' : (canUsePractice(id) && qs ? 'No questions in this module yet.' : 'Not open yet. Your instructor will release it.')}</span>
       </div>`;
       return;
     }
@@ -2877,12 +2894,12 @@ function startQuiz(which) {
   let pool;
   if (which === 'mixed') {
     pool = [];
-    PRACTICE_MODULE_IDS.filter(id => canUsePractice(id) && PRACTICE.quizzes[id]).forEach(id => PRACTICE.quizzes[id].forEach(q => pool.push({ q, module: id })));
+    PRACTICE_MODULE_IDS.filter(id => canUsePractice(id)).forEach(id => visibleQs(id).forEach(q => pool.push({ q, module: id })));
     if (!pool.length) { renderQuizHome(); return; }
     pool = shuffleArr(pool).slice(0, 10);
   } else {
-    if (!canUsePractice(which) || !PRACTICE.quizzes[which]) { renderQuizHome(); return; }
-    pool = shuffleArr(PRACTICE.quizzes[which].map(q => ({ q, module: Number(which) })));
+    if (!canUsePractice(which) || !visibleQs(which).length) { renderQuizHome(); return; }
+    pool = shuffleArr(visibleQs(which).map(q => ({ q, module: Number(which) })));
   }
   const items = pool.map(p => {
     const idxs = shuffleArr(p.q.o.map((_, i) => i));
@@ -2969,9 +2986,60 @@ function finishQuiz() {
       </div>`).join('') : '<div class="pr-missed-title">No missed questions. Nice work.</div>'}`;
 }
 
+function renderManage() {
+  const el = document.getElementById('pr-sec-manage');
+  if (!isInstructor) { el.innerHTML = ''; return; }
+  let html = '<p class="pr-intro">Hide any question or worked example (built-in or your own) from students, or show it again. Hidden items are not sent to students at all. To delete one of your own for good, delete its row in the PracticeQuestions or PracticeExamples tab of your Sheet.</p>';
+  PRACTICE_MODULE_IDS.forEach(id => {
+    const qs = PRACTICE.quizzes[id] || [];
+    const shown = qs.filter(q => !q.hidden).length;
+    html += `<div class="card pr-mgroup"><div class="card-title">M${id}: ${escapeHtml(moduleName(id))} <span class="pr-mcount">${shown} shown / ${qs.length} total</span></div>`;
+    if (!qs.length) html += '<div class="pr-mempty">No questions yet.</div>';
+    qs.forEach(q => {
+      html += `<div class="pr-mrow ${q.hidden ? 'is-hidden' : ''}">
+        <div class="pr-mbody">
+          <div class="pr-mq">${escapeHtml(q.q)}</div>
+          <div class="pr-ma">Answer: ${escapeHtml(q.o[0])} <span class="pr-mtag">${String(q.id).charAt(0) === 'c' ? 'your question' : 'built-in'}</span>${q.hidden ? '<span class="pr-hidden-badge">hidden from students</span>' : ''}</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="toggleQuestionHidden('${escapeHtml(q.id)}')">${q.hidden ? 'Show' : 'Hide'}</button>
+      </div>`;
+    });
+    const exs = PRACTICE.examples.filter(e => Number(e.module) === id);
+    if (exs.length) html += '<div class="pr-msub">Worked examples</div>';
+    exs.forEach(e => {
+      html += `<div class="pr-mrow ${e.hidden ? 'is-hidden' : ''}">
+        <div class="pr-mbody">
+          <div class="pr-mq">${escapeHtml(e.title)}</div>
+          <div class="pr-ma">Worked example <span class="pr-mtag">${String(e.id).charAt(0) === 'y' ? 'your example' : 'built-in'}</span>${e.hidden ? '<span class="pr-hidden-badge">hidden from students</span>' : ''}</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="toggleQuestionHidden('${escapeHtml(e.id)}')">${e.hidden ? 'Show' : 'Hide'}</button>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+async function toggleQuestionHidden(id) {
+  if (!isInstructor) return;
+  let target = null;
+  PRACTICE_MODULE_IDS.forEach(m => (PRACTICE.quizzes[m] || []).forEach(q => { if (q.id === id) target = q; }));
+  PRACTICE.examples.forEach(e => { if (e.id === id) target = e; });
+  if (!target) return;
+  const wantHidden = !target.hidden;
+  if (wantHidden) target.hidden = true; else delete target.hidden;
+  renderManage();
+  const r = await apiCall({ action: 'setHidden', id, hidden: wantHidden, key: instructorKey });
+  if (r.status !== 'ok') {
+    if (wantHidden) delete target.hidden; else target.hidden = true;
+    renderManage();
+    showToast('Could not save. Please log in as instructor again.');
+  }
+}
+
 function renderExamples() {
   const el = document.getElementById('pr-sec-examples');
-  const visible = PRACTICE.examples.filter(ex => canUsePractice(ex.module));
+  const visible = PRACTICE.examples.filter(ex => canUsePractice(ex.module) && !ex.hidden);
   if (!visible.length) {
     el.innerHTML = '<p class="pr-intro">No worked examples are open yet. Your instructor will release them module by module.</p>';
     return;
