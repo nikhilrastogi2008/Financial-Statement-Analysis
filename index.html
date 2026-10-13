@@ -1443,99 +1443,46 @@ let resourceFilter = 'all';
 let glossModuleFilter = 'all';
 let glossAlphaFilter = 'all';
 
+// All data goes through the Apps Script web app below. The Google Sheet itself is private
+// and is never read directly by this page. Set this to your deployment's Web app URL
+// (Apps Script -> Deploy -> Manage deployments).
 const API_URL = 'https://script.google.com/macros/s/AKfycbwCMMlswUmzkYzsxUlQM4EmbnABVOMqMdpByfIOQYCGCMWubfWK9uEiE9uwtQxYqP4/exec';
-const SHEET_ID = '1hbOSFC8ZGEWi8jKLDfaYv2wXj_nwv2RUVbxwJIH53sI';
-const SHEET_GIDS = {
-  Resources: '0',
-  Announcements: '866610172',
-  Glossary: '1389439697',
-  HiddenGlossary: '424548617',
-  ActivityLog: '1007139039'
-};
 
-async function apiAppend(sheet, rows) {
+// The instructor password is checked on the server. It is held here in memory only while
+// instructor mode is active, and is never stored or written into this file.
+let instructorKey = '';
+
+async function apiCall(payload) {
   try {
     const resp = await fetch(API_URL, {
       method: 'POST',
       redirect: 'follow',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'append', sheet, rows })
+      body: JSON.stringify(payload)
     });
-    if (!resp.ok) {
-      console.error('apiAppend failed for', sheet, '— status:', resp.status);
-    }
-  } catch(e) {
-    console.error('apiAppend error for', sheet, ':', e);
+    return await resp.json();
+  } catch (e) {
+    console.error('API call failed:', payload.action, payload.sheet || '', e);
+    return { status: 'network' };
   }
 }
 
-function apiRead(sheet) {
-  return new Promise((resolve) => {
-    const gid = SHEET_GIDS[sheet];
-    if (!gid) { resolve(null); return; }
-    const callbackName = 'gsCallback_' + sheet.replace(/[^a-z]/gi,'') + '_' + Date.now();
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&gid=${gid}&t=${Date.now()}`;
-    const script = document.createElement('script');
-    let done = false;
+async function apiAppend(sheet, rows) {
+  const r = await apiCall({ action: 'append', sheet, rows });
+  if (r.status !== 'ok') console.error('apiAppend failed for', sheet, r);
+}
 
-    window[callbackName] = function(data) {
-      if (done) return;
-      done = true;
-      try { document.head.removeChild(script); } catch(e) {}
-      delete window[callbackName];
-      try {
-        const cols = data.table.cols.map(c => c.label);
-        const rows = data.table.rows.map(row => {
-          const obj = {};
-          cols.forEach((col, i) => {
-            const cell = row.c[i];
-            obj[col] = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : '') : '';
-          });
-          return obj;
-        }).filter(r => r.id || r.term);
-        resolve(rows);
-      } catch(e) {
-        console.error('gviz parse error for', sheet, e);
-        resolve(null);
-      }
-    };
-
-    script.src = url;
-    script.onerror = function() {
-      if (done) return;
-      done = true;
-      console.error('gviz load failed for', sheet);
-      try { document.head.removeChild(script); } catch(e) {}
-      delete window[callbackName];
-      resolve(null);
-    };
-
-    setTimeout(() => {
-      if (done) return;
-      done = true;
-      console.error('gviz timeout for', sheet);
-      try { document.head.removeChild(script); } catch(e) {}
-      delete window[callbackName];
-      resolve(null);
-    }, 15000);
-
-    document.head.appendChild(script);
-  });
+// Public data: Resources, Announcements, Glossary, HiddenGlossary
+async function apiReadAll() {
+  const r = await apiCall({ action: 'readAll' });
+  return r.status === 'ok' ? r.data : null;
 }
 
 async function apiWrite(sheet, rows) {
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'write', sheet, rows })
-    });
-    if (!resp.ok) {
-      console.error('apiWrite failed for', sheet, '— status:', resp.status);
-    }
-  } catch(e) {
-    console.error('apiWrite error for', sheet, ':', e);
+  const r = await apiCall({ action: 'write', sheet, rows, key: instructorKey });
+  if (r.status !== 'ok') {
+    console.error('apiWrite failed for', sheet, r);
+    showToast('Could not save. Please log in as instructor again.');
   }
 }
 
@@ -1551,12 +1498,11 @@ let hiddenGlossaryIds = new Set();
 
 async function syncFromSheets() {
   showToast('Loading data...');
-  const [sheetResources, sheetAnn, sheetGloss, sheetHidden] = await Promise.all([
-    apiRead('Resources'),
-    apiRead('Announcements'),
-    apiRead('Glossary'),
-    apiRead('HiddenGlossary')
-  ]);
+  const all = await apiReadAll();
+  const sheetResources = all ? all.Resources : null;
+  const sheetAnn = all ? all.Announcements : null;
+  const sheetGloss = all ? all.Glossary : null;
+  const sheetHidden = all ? all.HiddenGlossary : null;
 
   // Load hidden glossary IDs
   if (sheetHidden && Array.isArray(sheetHidden)) {
@@ -1593,7 +1539,7 @@ async function syncFromSheets() {
   renderHomeAnnouncements();
   buildAlphaFilter();
   renderGlossary();
-  showToast('✓ Data loaded');
+  showToast(all ? '✓ Data loaded' : 'Could not reach the server. Showing built-in content only.');
 }
 
 async function saveToSheets(sheet, data) {
@@ -1702,6 +1648,7 @@ function logActivity(eventType, detail, module) {
 function toggleRole() {
   if (isInstructor) {
     isInstructor = false;
+    instructorKey = '';
     updateRoleUI();
     showToast('Switched to Student view');
   } else {
@@ -1712,16 +1659,28 @@ function toggleRole() {
   }
 }
 
-function checkPassword() {
+async function checkPassword() {
   const val = document.getElementById('pwdInput').value;
-  if (val === 'FSA2026') {
+  const errEl = document.getElementById('pwdError');
+  if (!val) {
+    errEl.textContent = 'Enter the instructor password.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  const r = await apiCall({ action: 'auth', key: val });
+  if (r.status === 'ok') {
+    instructorKey = val;
     closeModal('modalPassword');
     isInstructor = true;
     updateRoleUI();
     logActivity('instructor_login', 'instructor mode activated');
     showToast('Instructor mode activated');
   } else {
-    document.getElementById('pwdError').style.display = 'block';
+    errEl.textContent = r.status === 'denied'
+      ? 'Incorrect password. Try again.'
+      : 'Could not reach the server. Check your connection and try again.';
+    errEl.style.display = 'block';
     document.getElementById('pwdInput').select();
   }
 }
@@ -2360,12 +2319,22 @@ async function renderAnalytics() {
   const recentEl = document.getElementById('analyticsRecentTable');
   summaryEl.innerHTML = '<div style="grid-column:1/-1;color:var(--text-muted);font-size:0.85rem;">Loading…</div>';
 
-  const log = await apiRead('ActivityLog');
-  if (!log || !Array.isArray(log)) {
-    summaryEl.innerHTML = '<div style="grid-column:1/-1;color:var(--danger);font-size:0.85rem;">Could not load ActivityLog. Make sure the ActivityLog tab exists and its gid is set in SHEET_GIDS.</div>';
+  const res = await apiCall({ action: 'read', sheet: 'ActivityLog', key: instructorKey });
+  if (res.status !== 'ok') {
+    const msg = res.status === 'denied'
+      ? 'Your instructor session was not accepted by the server. Switch to Student view and log in again.'
+      : 'Could not load the activity log. Check your connection and that the Apps Script is deployed with the latest version.';
+    summaryEl.innerHTML = '<div style="grid-column:1/-1;color:var(--danger);font-size:0.85rem;">' + msg + '</div>';
     resEl.innerHTML = ''; studEl.innerHTML = ''; recentEl.innerHTML = '';
     return;
   }
+  const log = res.rows.map(r => Object.assign({}, r, {
+    timestamp: String(r.timestamp || ''),
+    name: String(r.name || ''),
+    enrollmentId: String(r.enrollmentId === undefined ? '' : r.enrollmentId),
+    eventType: String(r.eventType || ''),
+    detail: String(r.detail || '')
+  }));
 
   const logins = log.filter(r => r.eventType === 'login' || r.eventType === 'instructor_login');
   const opens = log.filter(r => r.eventType === 'resource_open');
